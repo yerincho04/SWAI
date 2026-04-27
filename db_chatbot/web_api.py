@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -27,7 +28,10 @@ class ChatHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except BrokenPipeError:
+            print("Client disconnected before response could be written.")
 
     def do_OPTIONS(self) -> None:  # noqa: N802
         self.send_response(204)
@@ -36,8 +40,19 @@ class ChatHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.end_headers()
 
+    def do_HEAD(self) -> None:  # noqa: N802
+        if self.path == "/" or self.path == "/health":
+            self.send_response(200)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.end_headers()
+            return
+        self.send_response(404)
+        self.end_headers()
+
     def do_GET(self) -> None:  # noqa: N802
-        if self.path == "/health":
+        if self.path == "/" or self.path == "/health":
             self._send_json({"ok": True, "service": "db_chatbot"})
             return
         self._send_json({"error": "Not found."}, status=404)
@@ -67,6 +82,7 @@ class ChatHandler(BaseHTTPRequestHandler):
         if brand_name and brand_name not in query:
             full_query = f"{brand_name} 브랜드 기준으로 답변해줘. 질문: {query}"
 
+        started_at = time.perf_counter()
         try:
             answer = run_once(
                 full_query,
@@ -76,9 +92,13 @@ class ChatHandler(BaseHTTPRequestHandler):
                 api_data_root=API_DATA_ROOT,
             )
         except Exception as exc:  # noqa: BLE001
+            elapsed = time.perf_counter() - started_at
+            print(f"Chat request failed after {elapsed:.2f}s: {exc}")
             self._send_json({"error": str(exc)}, status=500)
             return
 
+        elapsed = time.perf_counter() - started_at
+        print(f"Chat request completed in {elapsed:.2f}s for brand='{brand_name or '-'}'")
         self._send_json({"answer": answer, "brand_name": brand_name})
 
 

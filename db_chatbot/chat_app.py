@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,58 @@ from tools import (
     create_brand_overview_tool,
     create_brand_trend_tool,
 )
+
+
+@functools.lru_cache(maxsize=8)
+def _get_runtime(
+    model: str,
+    build_dir: str,
+    source_mode: str,
+    api_data_root: str,
+    db_path: str,
+):
+    store = BrandDataStore(
+        build_dir=Path(build_dir),
+        source_mode=source_mode,
+        api_data_root=Path(api_data_root),
+        db_path=Path(db_path) if db_path else None,
+    )
+    overview_tool = create_brand_overview_tool(store)
+    compare_tool = create_brand_compare_tool(store)
+    filter_search_tool = create_brand_filter_search_tool(store)
+    trend_tool = create_brand_trend_tool(store)
+    fallback_tool = create_brand_fallback_lookup_tool(store)
+    tools_by_name = {
+        overview_tool.name: overview_tool,
+        compare_tool.name: compare_tool,
+        filter_search_tool.name: filter_search_tool,
+        trend_tool.name: trend_tool,
+        fallback_tool.name: fallback_tool,
+    }
+
+    system = SystemMessage(
+        content=(
+            "당신은 데이터 기반 프랜차이즈 브랜드 분석 어시스턴트입니다. "
+            "최종 답변은 반드시 한국어로 작성하세요. "
+            "도구 결과를 근거로만 답변하고, 데이터가 없으면 추정하지 말고 "
+            "'원천 데이터에 없음'이라고 명확히 말하세요. "
+            "가능하면 기준 연도와 사용한 매장 유형을 함께 표시하세요. "
+            "조건 검색 요청은 brand_filter_search 도구를 사용하세요. "
+            "연도별 추이 요청은 brand_trend 도구를 사용하세요. "
+            "다른 도구에 명확히 맞지 않거나 브랜드명이 모호하면 brand_fallback_lookup 도구를 사용하세요. "
+            "도구 결과에 error가 있으면 오류 내용을 한국어로 풀어 설명하고 "
+            "사용자가 다시 시도할 입력 예시를 1개 제시하세요. "
+            "error_type이 brand_resolution이고 resolution_status가 ambiguous이면 "
+            "후보 브랜드를 번호 목록으로 보여주고, 하나를 선택해 달라고 안내하세요."
+        )
+    )
+
+    return {
+        "tools_by_name": tools_by_name,
+        "fallback_tool": fallback_tool,
+        "system": system,
+        "model": model,
+    }
 
 
 def load_env_file(path: Path) -> None:
@@ -45,44 +98,19 @@ def run_once(
     if not os.getenv("OPENAI_API_KEY"):
         raise RuntimeError("OPENAI_API_KEY is missing. Set it in db_chatbot/.env or environment.")
 
-    store = BrandDataStore(
-        build_dir=Path(build_dir),
+    runtime = _get_runtime(
+        model=model,
+        build_dir=str(Path(build_dir)),
         source_mode=source_mode,
-        api_data_root=Path(api_data_root),
-        db_path=Path(db_path) if db_path is not None else None,
+        api_data_root=str(Path(api_data_root)),
+        db_path=str(Path(db_path)) if db_path is not None else "",
     )
-    overview_tool = create_brand_overview_tool(store)
-    compare_tool = create_brand_compare_tool(store)
-    filter_search_tool = create_brand_filter_search_tool(store)
-    trend_tool = create_brand_trend_tool(store)
-    fallback_tool = create_brand_fallback_lookup_tool(store)
-    tools_by_name = {
-        overview_tool.name: overview_tool,
-        compare_tool.name: compare_tool,
-        filter_search_tool.name: filter_search_tool,
-        trend_tool.name: trend_tool,
-        fallback_tool.name: fallback_tool,
-    }
+    tools_by_name = runtime["tools_by_name"]
+    fallback_tool = runtime["fallback_tool"]
+    system = runtime["system"]
 
     llm = ChatOpenAI(model=model, temperature=0).bind_tools(list(tools_by_name.values()))
     plain_llm = ChatOpenAI(model=model, temperature=0)
-
-    system = SystemMessage(
-        content=(
-            "당신은 데이터 기반 프랜차이즈 브랜드 분석 어시스턴트입니다. "
-            "최종 답변은 반드시 한국어로 작성하세요. "
-            "도구 결과를 근거로만 답변하고, 데이터가 없으면 추정하지 말고 "
-            "'원천 데이터에 없음'이라고 명확히 말하세요. "
-            "가능하면 기준 연도와 사용한 매장 유형을 함께 표시하세요. "
-            "조건 검색 요청은 brand_filter_search 도구를 사용하세요. "
-            "연도별 추이 요청은 brand_trend 도구를 사용하세요. "
-            "다른 도구에 명확히 맞지 않거나 브랜드명이 모호하면 brand_fallback_lookup 도구를 사용하세요. "
-            "도구 결과에 error가 있으면 오류 내용을 한국어로 풀어 설명하고 "
-            "사용자가 다시 시도할 입력 예시를 1개 제시하세요. "
-            "error_type이 brand_resolution이고 resolution_status가 ambiguous이면 "
-            "후보 브랜드를 번호 목록으로 보여주고, 하나를 선택해 달라고 안내하세요."
-        )
-    )
     messages = [system, HumanMessage(content=query)]
     ai_msg = llm.invoke(messages)
 
