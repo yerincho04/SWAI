@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Intelligence Hub</title>
+    <meta name="description" content="Single-page brand statistics and DB chatbot experience powered by local franchise data.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="templatemo-glass-admin-style.css">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="dashboard dashboard-single">
+        <aside class="sidebar sidebar-single" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">B</div>
+                <span class="logo-text">Brand Hub</span>
+            </div>
+
+            <div class="single-nav-intro">
+                <p class="single-nav-kicker">Franchise Explorer</p>
+            </div>
+
+            <div class="single-nav-highlights">
+                <div class="single-highlight-card">
+                    <span>Source</span>
+                    <strong>FTC brand data</strong>
+                </div>
+                <div class="single-highlight-card">
+                    <span>Mode</span>
+                    <strong>Brand intelligence</strong>
+                </div>
+                <div class="single-highlight-card">
+                    <span>Chat</span>
+                    <strong>Per-brand assistant</strong>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">AI</div>
+                    <div class="user-info">
+                        <div class="user-name">DB Chatbot</div>
+                        <div class="user-role">Local Knowledge Layer</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content main-content-single">
+            <nav class="navbar">
+                <div class="page-header">
+                    <h1 class="page-title">Brand Statistics + Chatbot</h1>
+                    <div class="page-breadcrumb">
+                        <span>Single page prototype</span>
+                    </div>
+                </div>
+                <div class="navbar-right">
+                    <div class="search-box">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="search" class="search-input" id="brand-search" placeholder="브랜드명, 회사명, 업종으로 검색">
+                    </div>
+                    <button class="nav-btn" id="theme-toggle" title="Toggle Light/Dark Mode">
+                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="4"/>
+                            <path d="M12 2v2"/><path d="M12 20v2"/>
+                            <path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
+                            <path d="M2 12h2"/><path d="M20 12h2"/>
+                            <path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>
+                        </svg>
+                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+                </div>
+            </nav>
+
+            <section class="brand-hub">
+                <section class="glass-card hub-hero">
+                    <div class="hub-hero-copy">
+                        <span class="hub-kicker">Brand Intelligence Workspace</span>
+                        <h2>프랜차이즈 브랜드 데이터를 읽고, 바로 질문할 수 있는 한 화면</h2>
+                        <p>브랜드별 점포 수, 매출, 성장률, 폐점률, 창업 비용을 확인하고, 선택한 브랜드에 대해 DB 챗봇에게 바로 이어서 질문할 수 있습니다.</p>
+                    </div>
+                    <div class="hub-hero-metrics">
+                        <div class="hub-hero-stat">
+                            <span class="hub-hero-label">브랜드 수</span>
+                            <strong id="summary-brand-count">-</strong>
+                        </div>
+                        <div class="hub-hero-stat">
+                            <span class="hub-hero-label">검색 결과</span>
+                            <strong id="summary-filter-count">-</strong>
+                        </div>
+                        <div class="hub-hero-stat">
+                            <span class="hub-hero-label">기준 연도</span>
+                            <strong id="summary-latest-year">-</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="hub-layout">
+                    <section class="glass-card brand-list-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2 class="card-title">Brand Directory</h2>
+                                <p class="card-subtitle">Store count 기준으로 정렬된 브랜드 목록입니다.</p>
+                            </div>
+                        </div>
+                        <div class="brand-list-meta">
+                            <span id="brand-list-status">Loading data...</span>
+                        </div>
+                        <div class="brand-list" id="brand-list"></div>
+                    </section>
+
+                    <section class="hub-detail-stack">
+                        <section class="glass-card brand-detail-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2 class="card-title" id="brand-detail-name">Select a brand</h2>
+                                    <p class="card-subtitle" id="brand-detail-company">Choose a brand from the left to inspect its stats.</p>
+                                </div>
+                                <span class="brand-category-pill" id="brand-detail-category">-</span>
+                            </div>
+
+                            <div class="brand-summary-grid">
+                                <div class="brand-summary-card">
+                                    <span>점포 수</span>
+                                    <strong id="metric-store-count">-</strong>
+                                </div>
+                                <div class="brand-summary-card">
+                                    <span>평균 매출</span>
+                                    <strong id="metric-avg-sales">-</strong>
+                                </div>
+                                <div class="brand-summary-card">
+                                    <span>성장률</span>
+                                    <strong id="metric-growth-rate">-</strong>
+                                </div>
+                                <div class="brand-summary-card">
+                                    <span>폐점률</span>
+                                    <strong id="metric-closure-rate">-</strong>
+                                </div>
+                                <div class="brand-summary-card">
+                                    <span>이탈률</span>
+                                    <strong id="metric-churn-rate">-</strong>
+                                </div>
+                                <div class="brand-summary-card">
+                                    <span>창업 총비용</span>
+                                    <strong id="metric-startup-cost">-</strong>
+                                </div>
+                            </div>
+
+                            <div class="brand-detail-body">
+                                <div class="brand-info-block">
+                                    <h3>Brand Profile</h3>
+                                    <dl class="brand-facts">
+                                        <div><dt>브랜드명</dt><dd id="fact-brand-name">-</dd></div>
+                                        <div><dt>회사명</dt><dd id="fact-company-name">-</dd></div>
+                                        <div><dt>업종</dt><dd id="fact-category">-</dd></div>
+                                        <div><dt>가맹 시작일</dt><dd id="fact-start-date">-</dd></div>
+                                        <div><dt>매장 유형</dt><dd id="fact-store-type">-</dd></div>
+                                        <div><dt>기준 연도</dt><dd id="fact-year">-</dd></div>
+                                    </dl>
+                                </div>
+
+                                <div class="brand-info-block">
+                                    <h3>Yearly Trend</h3>
+                                    <div class="brand-trend-table-wrapper">
+                                        <table class="brand-trend-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>연도</th>
+                                                    <th>점포 수</th>
+                                                    <th>신규</th>
+                                                    <th>폐점</th>
+                                                    <th>매출</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="brand-trend-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="glass-card chatbot-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2 class="card-title">DB Chatbot</h2>
+                                    <p class="card-subtitle" id="chatbot-subtitle">Select a brand to ask a brand-specific question.</p>
+                                </div>
+                                <span class="chatbot-status" id="chatbot-status">Local API required</span>
+                            </div>
+
+                            <div class="chatbot-messages" id="chatbot-messages">
+                                <div class="chatbot-message bot">
+                                    <p>브랜드를 선택한 뒤 질문을 보내면 `db_chatbot`이 해당 브랜드 중심으로 답변합니다.</p>
+                                </div>
+                            </div>
+
+                            <div class="chatbot-prompts">
+                                <button class="card-btn prompt-btn" type="button" data-prompt="최근 점포 수 추이를 요약해줘">최근 추이 요약</button>
+                                <button class="card-btn prompt-btn" type="button" data-prompt="창업 비용 관점에서 설명해줘">창업 비용 설명</button>
+                                <button class="card-btn prompt-btn" type="button" data-prompt="운영 안정성 관점에서 평가해줘">운영 안정성 평가</button>
+                            </div>
+
+                            <form class="chatbot-form" id="chatbot-form">
+                                <textarea id="chatbot-input" placeholder="예: 이 브랜드의 폐점률과 매출을 같이 설명해줘" rows="3"></textarea>
+                                <div class="chatbot-actions">
+                                    <span class="chatbot-help">Run `python3 db_chatbot/web_api.py` before chatting.</span>
+                                    <button class="btn btn-primary" id="chatbot-send" type="submit" style="width: auto;">Ask</button>
+                                </div>
+                            </form>
+                        </section>
+                    </section>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <button class="mobile-menu-toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
+
+    <footer class="site-footer">
+        <p>Single-page prototype using local `db_chatbot` data and a lightweight chat API.</p>
+    </footer>
+
+    <script src="app-config.js"></script>
+    <script src="templatemo-glass-admin-script.js"></script>
+    <script>
+        (function () {
+            const BRAND_MASTER_URLS = [
+                './data/brand_master.json',
+                '../db_chatbot/build_api_selected/brand_master.json',
+                '/db_chatbot/build_api_selected/brand_master.json',
+                `${window.location.origin}/db_chatbot/build_api_selected/brand_master.json`
+            ];
+            const BRAND_YEAR_STATS_URLS = [
+                './data/brand_year_stats.json',
+                '../db_chatbot/build_api_selected/brand_year_stats.json',
+                '/db_chatbot/build_api_selected/brand_year_stats.json',
+                `${window.location.origin}/db_chatbot/build_api_selected/brand_year_stats.json`
+            ];
+            const BRAND_COSTS_URLS = [
+                './data/brand_store_type_costs.json',
+                '../db_chatbot/build_api_selected/brand_store_type_costs.json',
+                '/db_chatbot/build_api_selected/brand_store_type_costs.json',
+                `${window.location.origin}/db_chatbot/build_api_selected/brand_store_type_costs.json`
+            ];
+            const CHAT_API_URL = (window.APP_CONFIG && window.APP_CONFIG.chatApiUrl)
+                ? window.APP_CONFIG.chatApiUrl
+                : 'http://127.0.0.1:8001/api/chat';
+
+            const state = {
+                brands: [],
+                filteredBrands: [],
+                selectedBrand: null,
+                searchText: ''
+            };
+
+            const els = {
+                search: document.getElementById('brand-search'),
+                list: document.getElementById('brand-list'),
+                listStatus: document.getElementById('brand-list-status'),
+                summaryBrandCount: document.getElementById('summary-brand-count'),
+                summaryFilterCount: document.getElementById('summary-filter-count'),
+                summaryLatestYear: document.getElementById('summary-latest-year'),
+                detailName: document.getElementById('brand-detail-name'),
+                detailCompany: document.getElementById('brand-detail-company'),
+                detailCategory: document.getElementById('brand-detail-category'),
+                metricStoreCount: document.getElementById('metric-store-count'),
+                metricAvgSales: document.getElementById('metric-avg-sales'),
+                metricGrowthRate: document.getElementById('metric-growth-rate'),
+                metricClosureRate: document.getElementById('metric-closure-rate'),
+                metricChurnRate: document.getElementById('metric-churn-rate'),
+                metricStartupCost: document.getElementById('metric-startup-cost'),
+                factBrandName: document.getElementById('fact-brand-name'),
+                factCompanyName: document.getElementById('fact-company-name'),
+                factCategory: document.getElementById('fact-category'),
+                factStartDate: document.getElementById('fact-start-date'),
+                factStoreType: document.getElementById('fact-store-type'),
+                factYear: document.getElementById('fact-year'),
+                trendBody: document.getElementById('brand-trend-body'),
+                chatbotMessages: document.getElementById('chatbot-messages'),
+                chatbotSubtitle: document.getElementById('chatbot-subtitle'),
+                chatbotStatus: document.getElementById('chatbot-status'),
+                chatbotForm: document.getElementById('chatbot-form'),
+                chatbotInput: document.getElementById('chatbot-input')
+            };
+
+            function formatNumber(value) {
+                if (value === null || value === undefined || Number.isNaN(value)) return '-';
+                return Number(value).toLocaleString('ko-KR');
+            }
+
+            function formatKRW(value) {
+                if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
+                return `${Number(value).toLocaleString('ko-KR')} KRW`;
+            }
+
+            function formatPercent(value) {
+                if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
+                return `${(Number(value) * 100).toFixed(1)}%`;
+            }
+
+            function formatDate(value) {
+                if (!value) return '-';
+                const text = String(value);
+                if (text.length !== 8) return text;
+                return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
+            }
+
+            function buildBrandDataset(master, yearStats, costRows) {
+                const statsByBrand = new Map();
+                const trendByBrand = new Map();
+
+                yearStats.forEach((row) => {
+                    const brandId = row.brand_id;
+                    if (!trendByBrand.has(brandId)) trendByBrand.set(brandId, []);
+                    trendByBrand.get(brandId).push(row);
+
+                    const current = statsByBrand.get(brandId);
+                    if (!current || row.year > current.year) {
+                        statsByBrand.set(brandId, row);
+                    }
+                });
+
+                const costTotals = new Map();
+                costRows.forEach((row) => {
+                    const key = `${row.brand_id}:${row.year}:${row.store_type || 'Unknown'}`;
+                    const previous = costTotals.get(key) || 0;
+                    costTotals.set(key, previous + (Number(row.cost_amount_krw) || 0));
+                });
+
+                return master.map((brand) => {
+                    const latestStats = statsByBrand.get(brand.brand_id) || null;
+                    const brandTrends = (trendByBrand.get(brand.brand_id) || []).sort((a, b) => b.year - a.year);
+
+                    let startupCost = null;
+                    let storeType = '-';
+                    if (latestStats) {
+                        const matchingCosts = Array.from(costTotals.entries())
+                            .filter(([key]) => key.startsWith(`${brand.brand_id}:${latestStats.year}:`))
+                            .map(([key, total]) => ({
+                                total,
+                                storeType: key.split(':')[2]
+                            }))
+                            .sort((a, b) => b.total - a.total);
+
+                        if (matchingCosts.length > 0) {
+                            startupCost = matchingCosts[0].total;
+                            storeType = matchingCosts[0].storeType;
+                        }
+                    }
+
+                    return {
+                        brandId: brand.brand_id,
+                        brandName: brand.brand_name,
+                        companyName: brand.company_name,
+                        categoryMain: brand.category_main,
+                        categorySub: brand.category_sub,
+                        franchiseStartDate: brand.franchise_start_date,
+                        latestStats,
+                        startupCost,
+                        storeType,
+                        trends: brandTrends
+                    };
+                }).sort((a, b) => (b.latestStats?.store_count || 0) - (a.latestStats?.store_count || 0));
+            }
+
+            async function fetchJsonWithFallback(urls) {
+                let lastError = null;
+
+                for (const url of urls) {
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            lastError = new Error(`${response.status} ${response.statusText} at ${url}`);
+                            continue;
+                        }
+                        return await response.json();
+                    } catch (error) {
+                        lastError = error;
+                    }
+                }
+
+                throw lastError || new Error('Unable to fetch JSON data.');
+            }
+
+            function renderBrandList() {
+                els.list.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+
+                state.filteredBrands.slice(0, 120).forEach((brand) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = `brand-list-item${state.selectedBrand && state.selectedBrand.brandId === brand.brandId ? ' active' : ''}`;
+                    button.innerHTML = `
+                        <div class="brand-list-item-head">
+                            <strong>${brand.brandName}</strong>
+                            <span>${brand.latestStats ? brand.latestStats.year : '-'}</span>
+                        </div>
+                        <p>${brand.companyName || '회사 정보 없음'}</p>
+                        <div class="brand-list-item-meta">
+                            <span>${brand.categorySub || brand.categoryMain || '-'}</span>
+                            <span>점포 ${formatNumber(brand.latestStats?.store_count)}</span>
+                        </div>
+                    `;
+                    button.addEventListener('click', () => {
+                        state.selectedBrand = brand;
+                        renderBrandList();
+                        renderBrandDetail();
+                        resetChatMessages();
+                    });
+                    fragment.appendChild(button);
+                });
+
+                els.list.appendChild(fragment);
+                els.listStatus.textContent = `${formatNumber(state.filteredBrands.length)} brands shown`;
+                els.summaryBrandCount.textContent = formatNumber(state.brands.length);
+                els.summaryFilterCount.textContent = formatNumber(state.filteredBrands.length);
+                els.summaryLatestYear.textContent = formatNumber(state.selectedBrand?.latestStats?.year || state.brands[0]?.latestStats?.year);
+            }
+
+            function renderBrandDetail() {
+                const brand = state.selectedBrand;
+                if (!brand) return;
+
+                const stats = brand.latestStats || {};
+                els.detailName.textContent = brand.brandName;
+                els.detailCompany.textContent = brand.companyName || '회사 정보 없음';
+                els.detailCategory.textContent = [brand.categoryMain, brand.categorySub].filter(Boolean).join(' / ') || '분류 없음';
+                els.metricStoreCount.textContent = formatNumber(stats.store_count);
+                els.metricAvgSales.textContent = formatKRW(stats.avg_sales_krw);
+                els.metricGrowthRate.textContent = formatPercent(stats.store_growth_rate);
+                els.metricClosureRate.textContent = formatPercent(stats.closure_rate);
+                els.metricChurnRate.textContent = formatPercent(stats.churn_rate);
+                els.metricStartupCost.textContent = formatKRW(brand.startupCost);
+                els.factBrandName.textContent = brand.brandName;
+                els.factCompanyName.textContent = brand.companyName || '-';
+                els.factCategory.textContent = [brand.categoryMain, brand.categorySub].filter(Boolean).join(' / ') || '-';
+                els.factStartDate.textContent = formatDate(brand.franchiseStartDate);
+                els.factStoreType.textContent = brand.storeType || '-';
+                els.factYear.textContent = stats.year || '-';
+                els.chatbotSubtitle.textContent = `${brand.brandName} 관련 질문을 보내면 DB 챗봇이 해당 브랜드 중심으로 답변합니다.`;
+
+                els.trendBody.innerHTML = brand.trends.slice(0, 6).map((row) => `
+                    <tr>
+                        <td>${row.year}</td>
+                        <td>${formatNumber(row.store_count)}</td>
+                        <td>${formatNumber(row.new_stores)}</td>
+                        <td>${formatNumber(row.closed_stores)}</td>
+                        <td>${formatKRW(row.avg_sales_krw)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            function applyFilter() {
+                const keyword = state.searchText.trim().toLowerCase();
+                if (!keyword) {
+                    state.filteredBrands = state.brands;
+                } else {
+                    state.filteredBrands = state.brands.filter((brand) => {
+                        const haystack = [
+                            brand.brandName,
+                            brand.companyName,
+                            brand.categoryMain,
+                            brand.categorySub
+                        ].join(' ').toLowerCase();
+                        return haystack.includes(keyword);
+                    });
+                }
+
+                if (!state.selectedBrand || !state.filteredBrands.some((brand) => brand.brandId === state.selectedBrand.brandId)) {
+                    state.selectedBrand = state.filteredBrands[0] || state.brands[0] || null;
+                }
+
+                renderBrandList();
+                renderBrandDetail();
+            }
+
+            function appendChatMessage(role, text) {
+                const message = document.createElement('div');
+                message.className = `chatbot-message ${role}`;
+                message.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
+                els.chatbotMessages.appendChild(message);
+                els.chatbotMessages.scrollTop = els.chatbotMessages.scrollHeight;
+                return message;
+            }
+
+            function resetChatMessages() {
+                els.chatbotMessages.innerHTML = '';
+                appendChatMessage('bot', `${state.selectedBrand.brandName}에 대해 궁금한 점을 물어보세요. 예: 점포 수 추이, 창업 비용, 운영 안정성`);
+            }
+
+            async function sendChat(query) {
+                if (!state.selectedBrand) return;
+
+                appendChatMessage('user', query);
+                const loading = appendChatMessage('bot', '답변을 불러오는 중입니다...');
+                els.chatbotStatus.textContent = 'Requesting local API';
+
+                try {
+                    const response = await fetch(CHAT_API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            query,
+                            brand_name: state.selectedBrand.brandName
+                        })
+                    });
+
+                    const payload = await response.json();
+                    if (!response.ok) {
+                        throw new Error(payload.error || 'Chat API request failed.');
+                    }
+
+                    loading.innerHTML = `<p>${String(payload.answer || '답변이 비어 있습니다.').replace(/\n/g, '<br>')}</p>`;
+                    els.chatbotStatus.textContent = 'Connected';
+                } catch (error) {
+                    loading.innerHTML = `<p>챗봇 API에 연결하지 못했습니다. <br>${error.message}<br>로컬 개발 중이면 <code>python3 db_chatbot/web_api.py</code>를 실행하고, 배포 환경이면 <code>app-config.js</code>의 <code>chatApiUrl</code>이 올바른지 확인해 주세요.</p>`;
+                    els.chatbotStatus.textContent = 'Offline';
+                }
+            }
+
+            async function loadData() {
+                try {
+                    const [master, yearStats, costs] = await Promise.all([
+                        fetchJsonWithFallback(BRAND_MASTER_URLS),
+                        fetchJsonWithFallback(BRAND_YEAR_STATS_URLS),
+                        fetchJsonWithFallback(BRAND_COSTS_URLS)
+                    ]);
+
+                    state.brands = buildBrandDataset(master, yearStats, costs);
+                    state.filteredBrands = state.brands;
+                    state.selectedBrand = state.brands[0] || null;
+
+                    renderBrandList();
+                    renderBrandDetail();
+                    if (state.selectedBrand) {
+                        resetChatMessages();
+                    }
+                } catch (error) {
+                    els.listStatus.textContent = 'Failed to load brand data.';
+                    els.list.innerHTML = `<div class="brand-list-empty">Brand data could not be loaded.<br>${error.message}<br><br>Local dev: open Live Server from the workspace root or keep <code>./data</code> populated.<br>Deployment: make sure the Netlify build copied JSON files into <code>templatemo_607_glass_admin/data</code>.</div>`;
+                }
+            }
+
+            els.search.addEventListener('input', (event) => {
+                state.searchText = event.target.value;
+                applyFilter();
+            });
+
+            els.chatbotForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const query = els.chatbotInput.value.trim();
+                if (!query || !state.selectedBrand) return;
+                els.chatbotInput.value = '';
+                await sendChat(query);
+            });
+
+            document.querySelectorAll('.prompt-btn').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    if (!state.selectedBrand) return;
+                    await sendChat(button.dataset.prompt || '');
+                });
+            });
+
+            loadData();
+        })();
+    </script>
+</body>
+</html>
