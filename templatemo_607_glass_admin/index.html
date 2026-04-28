@@ -414,6 +414,27 @@
                 setChatAvailability();
             }
 
+            function triggerChatFallback(query) {
+                if (els.surveyBrand && !els.surveyBrand.value.trim() && state.selectedBrand) {
+                    els.surveyBrand.value = state.selectedBrand.brandName;
+                }
+
+                if (els.surveyInterest && !els.surveyInterest.value) {
+                    els.surveyInterest.value = 'AI 창업 진단 리포트';
+                }
+
+                const existingComment = els.surveyComment.value.trim();
+                const fallbackComment = `[Failed Chat Question] ${query}`;
+                if (!existingComment) {
+                    els.surveyComment.value = fallbackComment;
+                } else if (!existingComment.includes(fallbackComment)) {
+                    els.surveyComment.value = `${existingComment}\n${fallbackComment}`;
+                }
+
+                els.surveyStatus.textContent = 'AI 진단 기능이 현재 혼잡합니다. 질문 내용을 베타 신청과 함께 남겨주시면 우선적으로 안내드릴게요.';
+                scrollToSurvey();
+            }
+
             function getCookieValue(name) {
                 const value = `; ${document.cookie}`;
                 const parts = value.split(`; ${name}=`);
@@ -861,8 +882,9 @@
                         els.chatbotStatus.textContent = 'Connected';
                     }
                 } catch (error) {
-                    loading.innerHTML = `<p>챗봇 API에 연결하지 못했습니다. <br>${error.message}<br>로컬 개발 중이면 <code>python3 db_chatbot/web_api.py</code>를 실행하고, 배포 환경이면 <code>app-config.js</code>의 <code>chatApiUrl</code>이 올바른지 확인해 주세요.</p>`;
-                    els.chatbotStatus.textContent = 'Offline';
+                    loading.innerHTML = `<p>AI 진단 기능이 현재 혼잡합니다.<br>질문 내용을 베타 신청과 함께 남겨주시면 우선적으로 안내드릴게요.</p>`;
+                    els.chatbotStatus.textContent = 'Beta signup recommended';
+                    triggerChatFallback(query);
                 }
             }
 
