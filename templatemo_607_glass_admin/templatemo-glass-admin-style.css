@@ -2315,6 +2315,60 @@ a {
     line-height: 1.7;
 }
 
+.hub-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 22px 0 22px;
+}
+
+.hero-cta-btn {
+    min-width: 220px;
+}
+
+.hero-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hub-teaser-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.hub-teaser-card {
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px dashed rgba(72, 207, 167, 0.28);
+    background: rgba(255, 255, 255, 0.52);
+}
+
+.hub-teaser-card span {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(72, 207, 167, 0.12);
+    color: var(--emerald);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.hub-teaser-card strong {
+    display: block;
+    margin: 12px 0 8px;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.hub-teaser-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
 .hub-hero-metrics {
     display: grid;
     gap: 14px;
@@ -2607,6 +2661,11 @@ a {
     font-size: 13px;
 }
 
+.chatbot-lock-cta {
+    display: flex;
+    justify-content: flex-start;
+}
+
 .survey-panel {
     display: grid;
     gap: 18px;
@@ -2627,6 +2686,10 @@ a {
     resize: vertical;
 }
 
+.survey-select {
+    width: 100%;
+}
+
 .survey-actions {
     display: flex;
     align-items: center;
@@ -2642,6 +2705,7 @@ a {
 [data-theme="dark"] .single-highlight-card,
 [data-theme="dark"] .hub-hero,
 [data-theme="dark"] .hub-hero-stat,
+.hub-teaser-card,
 [data-theme="dark"] .brand-list-item,
 [data-theme="dark"] .brand-summary-card,
 [data-theme="dark"] .brand-info-block,
@@ -2673,6 +2737,10 @@ a {
     .brand-detail-body {
         grid-template-columns: 1fr;
     }
+
+    .hub-teaser-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 900px) {
@@ -2692,6 +2760,11 @@ a {
 
     .brand-summary-grid {
         grid-template-columns: 1fr;
+    }
+
+    .hub-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .panel-heading,

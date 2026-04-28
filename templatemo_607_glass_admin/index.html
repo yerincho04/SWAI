@@ -59,7 +59,7 @@
                     <h1 class="page-title">Brand Statistics + Chatbot</h1>
                 </div>
                 <div class="navbar-right">
-                    <a class="card-btn survey-link-btn" href="#survey-section">설문조사</a>
+                    <a class="card-btn survey-link-btn" href="#survey-section">베타 신청</a>
                     <div class="search-box">
                         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
@@ -86,8 +86,24 @@
                 <section class="glass-card hub-hero">
                     <div class="hub-hero-copy">
                         <span class="hub-kicker">Brand Intelligence Workspace</span>
-                        <h2>프랜차이즈 브랜드 데이터를 읽고, 바로 질문도 가능!</h2>
-                        <p>브랜드별 점포 수, 매출, 성장률, 폐점률, 창업 비용을 확인하고, 선택한 브랜드에 대해 DB 챗봇에게 바로 이어서 질문할 수 있습니다.</p>
+                        <h2>프랜차이즈 데이터를 보고, AI 창업 진단 리포트도 받아보세요</h2>
+                        <p>관심 있는 브랜드를 탐색하고, 곧 제공될 AI 창업 진단 리포트 베타에 신청해보세요. 실제로 얼마나 많은 사용자가 이 기능을 원하고 어떤 질문을 남기는지 확인하는 fake-door 실험입니다.</p>
+                        <div class="hub-hero-actions">
+                            <a class="btn btn-primary hero-cta-btn" href="#survey-section">AI 진단 리포트 베타 신청</a>
+                            <a class="card-btn hero-secondary-btn" href="#survey-section">의견 남기기</a>
+                        </div>
+                        <div class="hub-teaser-grid">
+                            <div class="hub-teaser-card">
+                                <span>곧 제공</span>
+                                <strong>AI 창업 진단 리포트</strong>
+                                <p>예산, 업종, 관심 브랜드를 바탕으로 리포트를 받아보는 기능입니다.</p>
+                            </div>
+                            <div class="hub-teaser-card">
+                                <span>곧 제공</span>
+                                <strong>브랜드 적합도 추천</strong>
+                                <p>매출, 성장률, 폐점률을 기반으로 후보 브랜드를 추천합니다.</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="hub-hero-metrics">
                         <div class="hub-hero-stat">
@@ -224,8 +240,8 @@
                 <section class="glass-card survey-panel" id="survey-section">
                     <div class="panel-heading">
                         <div>
-                            <h2 class="card-title">설문조사</h2>
-                            <p class="card-subtitle">이메일과 피드백을 남겨주시면 감사하겠습니다!</p>
+                            <h2 class="card-title">베타 신청 / 설문조사</h2>
+                            <p class="card-subtitle">AI 창업 진단 리포트가 출시되면 가장 먼저 안내받고 싶은 분들의 반응을 확인하고 있습니다.</p>
                         </div>
                     </div>
 
@@ -235,14 +251,28 @@
                                 <label class="form-label" for="survey-email">Email</label>
                                 <input class="form-input" id="survey-email" type="email" placeholder="your@email.com" required>
                             </div>
+                            <div class="form-group">
+                                <label class="form-label" for="survey-brand">Interested Brand</label>
+                                <input class="form-input" id="survey-brand" type="text" placeholder="예: GS25, 이디야커피, 메가커피" required>
+                            </div>
+                            <div class="form-group survey-form-full">
+                                <label class="form-label" for="survey-interest">Most Wanted Feature</label>
+                                <select class="form-input survey-select" id="survey-interest" required>
+                                    <option value="">원하는 기능을 선택해 주세요</option>
+                                    <option value="AI 창업 진단 리포트">AI 창업 진단 리포트</option>
+                                    <option value="브랜드 적합도 추천">브랜드 적합도 추천</option>
+                                    <option value="브랜드 비교 분석">브랜드 비교 분석</option>
+                                    <option value="출시 알림만 받기">출시 알림만 받기</option>
+                                </select>
+                            </div>
                             <div class="form-group survey-form-full">
                                 <label class="form-label" for="survey-comment">Comment Feedback</label>
-                                <textarea class="form-input survey-textarea" id="survey-comment" rows="5" placeholder="사이트 이용 경험이나 개선 의견을 남겨주세요." required></textarea>
+                                <textarea class="form-input survey-textarea" id="survey-comment" rows="5" placeholder="왜 이 기능이 필요하다고 느꼈는지, 어떤 도움을 기대하는지 남겨주세요." required></textarea>
                             </div>
                         </div>
                         <div class="survey-actions">
                             <p class="survey-status" id="survey-status"></p>
-                            <button class="btn btn-primary" id="survey-submit" type="submit" style="width: auto;">Submit Survey</button>
+                            <button class="btn btn-primary" id="survey-submit" type="submit" style="width: auto;">베타 신청하기</button>
                         </div>
                     </form>
                 </section>
@@ -297,7 +327,9 @@
                 selectedBrand: null,
                 searchText: '',
                 visitorLogSent: false,
-                visitorIp: 'unknown'
+                visitorIp: 'unknown',
+                freeQuestionUsed: false,
+                surveyUnlockedChat: false
             };
 
             const els = {
@@ -330,10 +362,57 @@
                 chatbotInput: document.getElementById('chatbot-input'),
                 surveyForm: document.getElementById('survey-form'),
                 surveyEmail: document.getElementById('survey-email'),
+                surveyBrand: document.getElementById('survey-brand'),
+                surveyInterest: document.getElementById('survey-interest'),
                 surveyComment: document.getElementById('survey-comment'),
                 surveyStatus: document.getElementById('survey-status'),
                 surveySubmit: document.getElementById('survey-submit')
             };
+
+            function scrollToSurvey() {
+                const section = document.getElementById('survey-section');
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            function setChatAvailability() {
+                const locked = state.freeQuestionUsed && !state.surveyUnlockedChat;
+                const sendButton = document.getElementById('chatbot-send');
+                els.chatbotInput.disabled = locked;
+                if (sendButton) {
+                    sendButton.disabled = locked;
+                }
+                els.chatbotInput.placeholder = locked
+                    ? '추가 질문은 베타 신청 후 이용할 수 있습니다.'
+                    : '예: 이 브랜드의 폐점률과 매출을 같이 설명해줘';
+                if (locked) {
+                    els.chatbotStatus.textContent = 'Beta signup required';
+                }
+            }
+
+            function showChatLimitNotice() {
+                const existingNotice = document.getElementById('chatbot-lock-btn');
+                if (existingNotice) return;
+
+                appendChatMessage(
+                    'bot',
+                    '첫 질문 체험이 끝났습니다.<br>추가 AI 진단을 이용하려면 아래 베타 신청 폼을 작성해 주세요.'
+                );
+
+                const action = document.createElement('div');
+                action.className = 'chatbot-lock-cta';
+                action.innerHTML = '<button type="button" class="btn btn-primary" id="chatbot-lock-btn" style="width: auto;">베타 신청하고 계속하기</button>';
+                els.chatbotMessages.appendChild(action);
+
+                const button = document.getElementById('chatbot-lock-btn');
+                if (button) {
+                    button.addEventListener('click', scrollToSurvey, { once: true });
+                }
+
+                els.chatbotMessages.scrollTop = els.chatbotMessages.scrollHeight;
+                setChatAvailability();
+            }
 
             function getCookieValue(name) {
                 const value = `; ${document.cookie}`;
@@ -484,12 +563,26 @@
                     event.preventDefault();
 
                     const email = els.surveyEmail.value.trim();
+                    const brand = els.surveyBrand.value.trim();
+                    const interest = els.surveyInterest.value.trim();
                     const comment = els.surveyComment.value.trim();
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
                     if (!email || !emailRegex.test(email)) {
                         els.surveyStatus.textContent = 'Please enter a valid email address.';
                         els.surveyEmail.focus();
+                        return;
+                    }
+
+                    if (!brand) {
+                        els.surveyStatus.textContent = 'Please share which brand you are most interested in.';
+                        els.surveyBrand.focus();
+                        return;
+                    }
+
+                    if (!interest) {
+                        els.surveyStatus.textContent = 'Please choose the feature you want most.';
+                        els.surveyInterest.focus();
                         return;
                     }
 
@@ -506,11 +599,15 @@
                         const payload = JSON.stringify({
                             id: getVisitorId(),
                             email,
-                            advice: comment
+                            advice: `[Interested Brand] ${brand}\n[Wanted Feature] ${interest}\n[Comment] ${comment}`
                         });
 
                         await sendSheetInsert(SURVEY_TABLE, payload);
-                        els.surveyStatus.textContent = 'Thanks! Your survey response has been saved.';
+                        els.surveyStatus.textContent = 'Thanks! Your beta signup has been saved.';
+                        state.surveyUnlockedChat = true;
+                        setChatAvailability();
+                        els.surveyBrand.value = '';
+                        els.surveyInterest.value = '';
                         els.surveyComment.value = '';
                     } catch (error) {
                         els.surveyStatus.textContent = `Survey save failed: ${error.message}`;
@@ -723,10 +820,17 @@
             function resetChatMessages() {
                 els.chatbotMessages.innerHTML = '';
                 appendChatMessage('bot', `${state.selectedBrand.brandName}에 대해 궁금한 점을 물어보세요. 예: 점포 수 추이, 창업 비용, 운영 안정성`);
+                if (state.freeQuestionUsed && !state.surveyUnlockedChat) {
+                    showChatLimitNotice();
+                }
             }
 
             async function sendChat(query) {
                 if (!state.selectedBrand) return;
+                if (state.freeQuestionUsed && !state.surveyUnlockedChat) {
+                    showChatLimitNotice();
+                    return;
+                }
 
                 appendChatMessage('user', query);
                 const loading = appendChatMessage('bot', '답변을 불러오는 중입니다...');
@@ -750,7 +854,12 @@
                     }
 
                     loading.innerHTML = `<p>${String(payload.answer || '답변이 비어 있습니다.').replace(/\n/g, '<br>')}</p>`;
-                    els.chatbotStatus.textContent = 'Connected';
+                    if (!state.surveyUnlockedChat) {
+                        state.freeQuestionUsed = true;
+                        showChatLimitNotice();
+                    } else {
+                        els.chatbotStatus.textContent = 'Connected';
+                    }
                 } catch (error) {
                     loading.innerHTML = `<p>챗봇 API에 연결하지 못했습니다. <br>${error.message}<br>로컬 개발 중이면 <code>python3 db_chatbot/web_api.py</code>를 실행하고, 배포 환경이면 <code>app-config.js</code>의 <code>chatApiUrl</code>이 올바른지 확인해 주세요.</p>`;
                     els.chatbotStatus.textContent = 'Offline';
@@ -802,6 +911,7 @@
 
             initSurveyForm();
             logVisitorAccess();
+            setChatAvailability();
             loadData();
         })();
     </script>
