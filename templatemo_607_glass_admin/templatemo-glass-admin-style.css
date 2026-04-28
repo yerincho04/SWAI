@@ -2349,6 +2349,10 @@ a {
     align-items: start;
 }
 
+.survey-link-btn {
+    white-space: nowrap;
+}
+
 .hub-detail-stack {
     display: grid;
     gap: 24px;
@@ -2603,6 +2607,38 @@ a {
     font-size: 13px;
 }
 
+.survey-panel {
+    display: grid;
+    gap: 18px;
+}
+
+.survey-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.survey-form-full {
+    grid-column: 1 / -1;
+}
+
+.survey-textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.survey-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.survey-status {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
 [data-theme="dark"] .single-highlight-card,
 [data-theme="dark"] .hub-hero,
 [data-theme="dark"] .hub-hero-stat,
@@ -2616,6 +2652,10 @@ a {
 
 [data-theme="dark"] .chatbot-message.user p {
     background: linear-gradient(135deg, rgba(72, 207, 167, 0.18), rgba(214, 168, 111, 0.14));
+}
+
+[data-theme="dark"] .survey-status {
+    color: var(--text-secondary);
 }
 
 @media (max-width: 1380px) {
@@ -2639,6 +2679,10 @@ a {
     .brand-summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .survey-form-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 640px) {
@@ -2651,7 +2695,8 @@ a {
     }
 
     .panel-heading,
-    .chatbot-actions {
+    .chatbot-actions,
+    .survey-actions {
         flex-direction: column;
         align-items: flex-start;
     }

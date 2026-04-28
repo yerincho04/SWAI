@@ -32,6 +32,8 @@ Examples:
 4. In Netlify site settings, add an environment variable:
    - `CHAT_API_URL`
    - value example: `https://your-backend.example.com/api/chat`
+   - `SHEET_SCRIPT_URL`
+   - value example: `https://script.google.com/macros/s/your-script-id/exec`
 5. Trigger a deploy.
 
 ## Local development
@@ -47,4 +49,4 @@ Then open `templatemo_607_glass_admin/index.html` with Live Server.
 ## Notes
 
 - `scripts/prepare_netlify.py` copies the JSON data files into `templatemo_607_glass_admin/data`.
-- the same script writes `templatemo_607_glass_admin/app-config.js` using the `CHAT_API_URL` environment variable.
+- the same script writes `templatemo_607_glass_admin/app-config.js` using the `CHAT_API_URL` and `SHEET_SCRIPT_URL` environment variables.

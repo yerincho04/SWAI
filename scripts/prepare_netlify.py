@@ -30,7 +30,12 @@ def copy_data_files() -> None:
 
 def write_app_config() -> None:
     chat_api_url = os.environ.get("CHAT_API_URL", "http://127.0.0.1:8001/api/chat")
-    payload = {"chatApiUrl": chat_api_url}
+    payload = {
+        "chatApiUrl": chat_api_url,
+        "sheetScriptUrl": os.environ.get("SHEET_SCRIPT_URL", ""),
+        "visitorsTable": os.environ.get("VISITORS_TABLE", "visitors"),
+        "surveyTable": os.environ.get("SURVEY_TABLE", "tab_final"),
+    }
     APP_CONFIG_PATH.write_text(
         "window.APP_CONFIG = " + json.dumps(payload, ensure_ascii=False, indent=4) + ";\n",
         encoding="utf-8",
