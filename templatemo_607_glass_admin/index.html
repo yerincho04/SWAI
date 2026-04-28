@@ -620,13 +620,17 @@
                         const payload = JSON.stringify({
                             id: getVisitorId(),
                             email,
-                            advice: `[Interested Brand] ${brand}\n[Wanted Feature] ${interest}\n[Comment] ${comment}`
+                            interested_brand: brand,
+                            wanted_feature: interest,
+                            comment,
+                            submitted_at: getTimeStamp()
                         });
 
                         await sendSheetInsert(SURVEY_TABLE, payload);
                         els.surveyStatus.textContent = 'Thanks! Your beta signup has been saved.';
                         state.surveyUnlockedChat = true;
                         setChatAvailability();
+                        els.surveyEmail.value = '';
                         els.surveyBrand.value = '';
                         els.surveyInterest.value = '';
                         els.surveyComment.value = '';
