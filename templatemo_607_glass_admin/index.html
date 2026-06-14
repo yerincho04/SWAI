@@ -9,6 +9,71 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="templatemo-glass-admin-style.css">
+    <style>
+        /* --- Onboarding Modal --- */
+        .onboarding-overlay {
+            position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,0.45); backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        .onboarding-overlay.hidden { display: none; }
+        .onboarding-card {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius); padding: 36px;
+            max-width: 520px; width: 100%;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+        }
+        .onboarding-card h2 { font-size: 1.25rem; margin-bottom: 8px; }
+        .onboarding-card > p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 28px; }
+        .onboarding-field { margin-bottom: 24px; }
+        .onboarding-field label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; }
+        .onboarding-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            padding: 7px 14px; border-radius: 20px; font-size: 0.85rem;
+            border: 1.5px solid var(--glass-border); background: transparent;
+            color: var(--text-primary); cursor: pointer; transition: all 0.2s;
+        }
+        .chip:hover { border-color: var(--emerald); color: var(--emerald); }
+        .chip.selected { background: var(--emerald); border-color: var(--emerald); color: #fff; }
+        .onboarding-actions { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
+        .onboarding-skip { background: none; border: none; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; }
+        .onboarding-skip:hover { color: var(--text-secondary); }
+        .onboarding-pref-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.78rem; color: var(--text-muted); margin-left: 8px;
+        }
+        .onboarding-pref-badge button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.85rem; }
+        .onboarding-pref-badge button:hover { color: var(--danger); }
+
+        /* --- Filter Tabs --- */
+        .brand-list-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+        .tab-btn {
+            padding: 5px 14px; border-radius: 16px; font-size: 0.82rem; font-weight: 500;
+            border: 1.5px solid var(--glass-border); background: transparent;
+            color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn.active { background: var(--emerald); border-color: var(--emerald); color: #fff; }
+        .tab-btn .tab-count { font-size: 0.75rem; opacity: 0.85; margin-left: 4px; }
+
+        /* --- Save Button --- */
+        .save-brand-btn {
+            background: none; border: 1.5px solid var(--glass-border); border-radius: 20px;
+            padding: 5px 14px; font-size: 0.85rem; cursor: pointer; color: var(--text-secondary);
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .save-brand-btn:hover { border-color: var(--coral); color: var(--coral); }
+        .save-brand-btn.saved { background: var(--coral); border-color: var(--coral); color: #fff; }
+        .brand-item-save {
+            background: none; border: none; cursor: pointer; font-size: 1rem;
+            color: var(--text-muted); padding: 2px 4px; line-height: 1;
+            transition: color 0.15s; flex-shrink: 0;
+        }
+        .brand-item-save:hover { color: var(--coral); }
+        .brand-item-save.saved { color: var(--coral); }
+        .brand-list-item-head { display: flex; justify-content: space-between; align-items: center; }
+        .brand-list-item-head-left { display: flex; align-items: center; gap: 6px; }
+    </style>
 </head>
 <body>
     <div class="background"></div>
@@ -129,8 +194,13 @@
                                 <p class="card-subtitle">Store count 기준으로 정렬된 브랜드 목록입니다.</p>
                             </div>
                         </div>
+                        <div class="brand-list-tabs">
+                            <button class="tab-btn active" id="tab-all">전체</button>
+                            <button class="tab-btn" id="tab-saved">저장한 브랜드<span class="tab-count" id="saved-tab-count"></span></button>
+                        </div>
                         <div class="brand-list-meta">
                             <span id="brand-list-status">Loading data...</span>
+                            <span id="pref-badge"></span>
                         </div>
                         <div class="brand-list" id="brand-list"></div>
                     </section>
@@ -142,7 +212,10 @@
                                     <h2 class="card-title" id="brand-detail-name">Select a brand</h2>
                                     <p class="card-subtitle" id="brand-detail-company">Choose a brand from the left to inspect its stats.</p>
                                 </div>
-                                <span class="brand-category-pill" id="brand-detail-category">-</span>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <button class="save-brand-btn" id="detail-save-btn" type="button">♡ 저장</button>
+                                    <span class="brand-category-pill" id="brand-detail-category">-</span>
+                                </div>
                             </div>
 
                             <div class="brand-summary-grid">
@@ -279,6 +352,32 @@
         </main>
     </div>
 
+    <!-- Onboarding Modal -->
+    <div class="onboarding-overlay hidden" id="onboarding-modal">
+        <div class="onboarding-card">
+            <h2>맞춤 브랜드를 추천해 드릴게요</h2>
+            <p>관심 업종과 예산을 선택하면 딱 맞는 프랜차이즈 브랜드를 보여드립니다.</p>
+            <div class="onboarding-field">
+                <label>관심 업종 (복수 선택 가능)</label>
+                <div class="onboarding-chips" id="onboarding-category-chips"></div>
+            </div>
+            <div class="onboarding-field">
+                <label>창업 예산</label>
+                <div class="onboarding-chips" id="onboarding-budget-chips">
+                    <button class="chip" data-budget-min="0" data-budget-max="50000000">5천만원 미만</button>
+                    <button class="chip" data-budget-min="50000000" data-budget-max="100000000">5천만~1억</button>
+                    <button class="chip" data-budget-min="100000000" data-budget-max="300000000">1억~3억</button>
+                    <button class="chip" data-budget-min="300000000" data-budget-max="500000000">3억~5억</button>
+                    <button class="chip" data-budget-min="500000000" data-budget-max="999999999999">5억 이상</button>
+                </div>
+            </div>
+            <div class="onboarding-actions">
+                <button class="btn btn-primary" id="onboarding-submit" style="width:auto;">맞춤 브랜드 보기</button>
+                <button class="onboarding-skip" id="onboarding-skip">건너뛰기</button>
+            </div>
+        </div>
+    </div>
+
     <button class="mobile-menu-toggle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -328,7 +427,10 @@
                 visitorLogSent: false,
                 visitorIp: 'unknown',
                 freeQuestionUsed: false,
-                surveyUnlockedChat: false
+                surveyUnlockedChat: false,
+                savedBrands: new Set(JSON.parse(localStorage.getItem('brandhub_saved') || '[]')),
+                showSaved: false,
+                userPrefs: JSON.parse(localStorage.getItem('brandhub_prefs') || 'null')
             };
 
             const els = {
@@ -365,7 +467,10 @@
                 surveyInterest: document.getElementById('survey-interest'),
                 surveyComment: document.getElementById('survey-comment'),
                 surveyStatus: document.getElementById('survey-status'),
-                surveySubmit: document.getElementById('survey-submit')
+                surveySubmit: document.getElementById('survey-submit'),
+                detailSaveBtn: document.getElementById('detail-save-btn'),
+                savedTabCount: document.getElementById('saved-tab-count'),
+                prefBadge: document.getElementById('pref-badge')
             };
 
             function scrollToSurvey() {
@@ -746,14 +851,28 @@
                 els.list.innerHTML = '';
                 const fragment = document.createDocumentFragment();
 
-                state.filteredBrands.slice(0, 120).forEach((brand) => {
+                const displayList = state.showSaved
+                    ? state.filteredBrands.filter((b) => state.savedBrands.has(b.brandId))
+                    : state.filteredBrands;
+
+                displayList.slice(0, 120).forEach((brand) => {
+                    const saved = state.savedBrands.has(brand.brandId);
+                    const item = document.createElement('div');
+                    item.className = 'brand-list-item-wrapper';
+                    item.style.position = 'relative';
+
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = `brand-list-item${state.selectedBrand && state.selectedBrand.brandId === brand.brandId ? ' active' : ''}`;
                     button.innerHTML = `
                         <div class="brand-list-item-head">
-                            <strong>${brand.brandName}</strong>
-                            <span>${brand.latestStats ? brand.latestStats.year : '-'}</span>
+                            <div class="brand-list-item-head-left">
+                                <strong>${brand.brandName}</strong>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span>${brand.latestStats ? brand.latestStats.year : '-'}</span>
+                                <button class="brand-item-save ${saved ? 'saved' : ''}" data-brand-id="${brand.brandId}" title="${saved ? '저장 취소' : '브랜드 저장'}">${saved ? '♥' : '♡'}</button>
+                            </div>
                         </div>
                         <p>${brand.companyName || '회사 정보 없음'}</p>
                         <div class="brand-list-item-meta">
@@ -761,19 +880,29 @@
                             <span>점포 ${formatNumber(brand.latestStats?.store_count)}</span>
                         </div>
                     `;
-                    button.addEventListener('click', () => {
+                    button.addEventListener('click', (e) => {
+                        if (e.target.closest('.brand-item-save')) return;
                         state.selectedBrand = brand;
                         renderBrandList();
                         renderBrandDetail();
                         resetChatMessages();
                     });
+                    button.querySelector('.brand-item-save').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleSaveBrand(brand.brandId);
+                    });
                     fragment.appendChild(button);
                 });
 
                 els.list.appendChild(fragment);
-                els.listStatus.textContent = `${formatNumber(state.filteredBrands.length)} brands shown`;
+
+                const savedCount = state.savedBrands.size;
+                els.savedTabCount.textContent = savedCount ? ` (${savedCount})` : '';
+                els.listStatus.textContent = state.showSaved
+                    ? `저장한 브랜드 ${formatNumber(displayList.length)}개`
+                    : `${formatNumber(displayList.length)}개 브랜드`;
                 els.summaryBrandCount.textContent = formatNumber(state.brands.length);
-                els.summaryFilterCount.textContent = formatNumber(state.filteredBrands.length);
+                els.summaryFilterCount.textContent = formatNumber(displayList.length);
                 els.summaryLatestYear.textContent = formatNumber(state.selectedBrand?.latestStats?.year || state.brands[0]?.latestStats?.year);
             }
 
@@ -808,25 +937,34 @@
                         <td>${formatKRW(row.avg_sales_krw)}</td>
                     </tr>
                 `).join('');
+
+                updateDetailSaveButton();
             }
 
             function applyFilter() {
                 const keyword = state.searchText.trim().toLowerCase();
-                if (!keyword) {
-                    state.filteredBrands = state.brands;
-                } else {
-                    state.filteredBrands = state.brands.filter((brand) => {
-                        const haystack = [
-                            brand.brandName,
-                            brand.companyName,
-                            brand.categoryMain,
-                            brand.categorySub
-                        ].join(' ').toLowerCase();
+                let base = state.brands;
+
+                if (state.userPrefs) {
+                    const { categories, budgetMin, budgetMax } = state.userPrefs;
+                    base = base.filter((brand) => {
+                        const catMatch = !categories.length || categories.includes(brand.categoryMain);
+                        const cost = brand.startupCost;
+                        const budgetMatch = budgetMin === null || cost === null || (cost >= budgetMin && cost <= budgetMax);
+                        return catMatch && budgetMatch;
+                    });
+                }
+
+                if (keyword) {
+                    base = base.filter((brand) => {
+                        const haystack = [brand.brandName, brand.companyName, brand.categoryMain, brand.categorySub].join(' ').toLowerCase();
                         return haystack.includes(keyword);
                     });
                 }
 
-                if (!state.selectedBrand || !state.filteredBrands.some((brand) => brand.brandId === state.selectedBrand.brandId)) {
+                state.filteredBrands = base;
+
+                if (!state.selectedBrand || !state.filteredBrands.some((b) => b.brandId === state.selectedBrand.brandId)) {
                     state.selectedBrand = state.filteredBrands[0] || state.brands[0] || null;
                 }
 
@@ -899,6 +1037,94 @@
                 }
             }
 
+            function toggleSaveBrand(brandId) {
+                if (state.savedBrands.has(brandId)) {
+                    state.savedBrands.delete(brandId);
+                } else {
+                    state.savedBrands.add(brandId);
+                }
+                localStorage.setItem('brandhub_saved', JSON.stringify([...state.savedBrands]));
+                renderBrandList();
+                updateDetailSaveButton();
+            }
+
+            function updateDetailSaveButton() {
+                if (!els.detailSaveBtn || !state.selectedBrand) return;
+                const saved = state.savedBrands.has(state.selectedBrand.brandId);
+                els.detailSaveBtn.textContent = saved ? '♥ 저장됨' : '♡ 저장';
+                els.detailSaveBtn.classList.toggle('saved', saved);
+            }
+
+            function showOnboardingModal() {
+                const modal = document.getElementById('onboarding-modal');
+                if (!modal) return;
+
+                const categories = [...new Set(state.brands.map((b) => b.categoryMain).filter(Boolean))].sort();
+                const chipContainer = document.getElementById('onboarding-category-chips');
+                chipContainer.innerHTML = '';
+                categories.forEach((cat) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'chip';
+                    btn.textContent = cat;
+                    btn.addEventListener('click', () => btn.classList.toggle('selected'));
+                    chipContainer.appendChild(btn);
+                });
+
+                document.querySelectorAll('#onboarding-budget-chips .chip').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('#onboarding-budget-chips .chip').forEach((b) => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                    });
+                });
+
+                document.getElementById('onboarding-submit').onclick = () => {
+                    const selectedCats = [...chipContainer.querySelectorAll('.chip.selected')].map((b) => b.textContent);
+                    const budgetBtn = document.querySelector('#onboarding-budget-chips .chip.selected');
+                    const prefs = {
+                        categories: selectedCats,
+                        budgetMin: budgetBtn ? Number(budgetBtn.dataset.budgetMin) : null,
+                        budgetMax: budgetBtn ? Number(budgetBtn.dataset.budgetMax) : null,
+                        label: [
+                            selectedCats.length ? selectedCats.join(', ') : null,
+                            budgetBtn ? budgetBtn.textContent : null
+                        ].filter(Boolean).join(' · ')
+                    };
+                    state.userPrefs = prefs;
+                    localStorage.setItem('brandhub_prefs', JSON.stringify(prefs));
+                    localStorage.setItem('brandhub_onboarded', '1');
+                    modal.classList.add('hidden');
+                    applyFilter();
+                    updatePrefBadge();
+                };
+
+                document.getElementById('onboarding-skip').onclick = () => {
+                    localStorage.setItem('brandhub_onboarded', '1');
+                    modal.classList.add('hidden');
+                };
+
+                modal.classList.remove('hidden');
+            }
+
+            function updatePrefBadge() {
+                if (!els.prefBadge) return;
+                if (!state.userPrefs || !state.userPrefs.label) {
+                    els.prefBadge.innerHTML = '';
+                    return;
+                }
+                els.prefBadge.innerHTML = `
+                    <span class="onboarding-pref-badge">
+                        · ${state.userPrefs.label}
+                        <button title="필터 초기화" id="clear-pref-btn">✕</button>
+                    </span>`;
+                document.getElementById('clear-pref-btn').addEventListener('click', () => {
+                    state.userPrefs = null;
+                    localStorage.removeItem('brandhub_prefs');
+                    localStorage.removeItem('brandhub_onboarded');
+                    els.prefBadge.innerHTML = '';
+                    applyFilter();
+                });
+            }
+
             async function loadData() {
                 try {
                     const [master, yearStats, costs] = await Promise.all([
@@ -911,10 +1137,15 @@
                     state.filteredBrands = state.brands;
                     state.selectedBrand = state.brands[0] || null;
 
-                    renderBrandList();
-                    renderBrandDetail();
+                    updatePrefBadge();
+                    applyFilter();
                     if (state.selectedBrand) {
                         resetChatMessages();
+                        updateDetailSaveButton();
+                    }
+
+                    if (!localStorage.getItem('brandhub_onboarded')) {
+                        showOnboardingModal();
                     }
                 } catch (error) {
                     els.listStatus.textContent = 'Failed to load brand data.';
@@ -925,6 +1156,24 @@
             els.search.addEventListener('input', (event) => {
                 state.searchText = event.target.value;
                 applyFilter();
+            });
+
+            document.getElementById('tab-all').addEventListener('click', () => {
+                state.showSaved = false;
+                document.getElementById('tab-all').classList.add('active');
+                document.getElementById('tab-saved').classList.remove('active');
+                renderBrandList();
+            });
+
+            document.getElementById('tab-saved').addEventListener('click', () => {
+                state.showSaved = true;
+                document.getElementById('tab-saved').classList.add('active');
+                document.getElementById('tab-all').classList.remove('active');
+                renderBrandList();
+            });
+
+            els.detailSaveBtn.addEventListener('click', () => {
+                if (state.selectedBrand) toggleSaveBrand(state.selectedBrand.brandId);
             });
 
             els.chatbotForm.addEventListener('submit', async (event) => {
