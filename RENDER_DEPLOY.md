@@ -29,7 +29,7 @@ pip install -r db_chatbot/requirements.txt
 - Start Command:
 
 ```bash
-HOST=0.0.0.0 python3 db_chatbot/web_api.py
+cd db_chatbot && uvicorn web_api:app --host 0.0.0.0 --port $PORT
 ```
 
 ## 4. Add environment variables

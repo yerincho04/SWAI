@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""Tiny local web API for the DB chatbot."""
+"""FastAPI web server for the DB chatbot."""
 
 from __future__ import annotations
 
-import json
 import os
 import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 from chat_app import run_once
 
@@ -17,104 +19,62 @@ ROOT = Path(__file__).resolve().parent.parent
 BUILD_DIR = ROOT / "db_chatbot" / "build_api_selected"
 API_DATA_ROOT = ROOT / "db_chatbot" / "api_data"
 
+app = FastAPI(title="DB Chatbot API")
 
-class ChatHandler(BaseHTTPRequestHandler):
-    def _send_json(self, payload: dict[str, Any], status: int = 200) -> None:
-        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.end_headers()
-        try:
-            self.wfile.write(body)
-        except BrokenPipeError:
-            print("Client disconnected before response could be written.")
-
-    def do_OPTIONS(self) -> None:  # noqa: N802
-        self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.end_headers()
-
-    def do_HEAD(self) -> None:  # noqa: N802
-        if self.path == "/" or self.path == "/health":
-            self.send_response(200)
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
-            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-            self.end_headers()
-            return
-        self.send_response(404)
-        self.end_headers()
-
-    def do_GET(self) -> None:  # noqa: N802
-        if self.path == "/" or self.path == "/health":
-            self._send_json({"ok": True, "service": "db_chatbot"})
-            return
-        self._send_json({"error": "Not found."}, status=404)
-
-    def do_POST(self) -> None:  # noqa: N802
-        if self.path != "/api/chat":
-            self._send_json({"error": "Not found."}, status=404)
-            return
-
-        try:
-            content_length = int(self.headers.get("Content-Length", "0"))
-            raw_body = self.rfile.read(content_length)
-            payload = json.loads(raw_body.decode("utf-8") or "{}")
-        except Exception as exc:  # noqa: BLE001
-            self._send_json({"error": f"Invalid request body: {exc}"}, status=400)
-            return
-
-        query = str(payload.get("query") or "").strip()
-        brand_name = str(payload.get("brand_name") or "").strip()
-        model = str(payload.get("model") or "gpt-4.1-mini").strip()
-
-        if not query:
-            self._send_json({"error": "Missing query."}, status=400)
-            return
-
-        full_query = query
-        if brand_name and brand_name not in query:
-            full_query = f"{brand_name} 브랜드 기준으로 답변해줘. 질문: {query}"
-
-        started_at = time.perf_counter()
-        try:
-            answer = run_once(
-                full_query,
-                model=model,
-                source_mode="build",
-                build_dir=BUILD_DIR,
-                api_data_root=API_DATA_ROOT,
-            )
-        except Exception as exc:  # noqa: BLE001
-            elapsed = time.perf_counter() - started_at
-            print(f"Chat request failed after {elapsed:.2f}s: {exc}")
-            self._send_json({"error": str(exc)}, status=500)
-            return
-
-        elapsed = time.perf_counter() - started_at
-        print(f"Chat request completed in {elapsed:.2f}s for brand='{brand_name or '-'}'")
-        self._send_json({"answer": answer, "brand_name": brand_name})
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-def main() -> int:
-    host = os.environ.get("HOST", "127.0.0.1")
-    port = int(os.environ.get("PORT", "8001"))
-    server = ThreadingHTTPServer((host, port), ChatHandler)
-    print(f"DB chatbot API running at http://{host}:{port}")
+class ChatRequest(BaseModel):
+    query: str
+    brand_name: str = ""
+    model: str = "gpt-4.1-mini"
+
+
+@app.get("/")
+@app.get("/health")
+def health():
+    return {"ok": True, "service": "db_chatbot"}
+
+
+@app.post("/api/chat")
+def chat(body: ChatRequest):
+    query = body.query.strip()
+    brand_name = body.brand_name.strip()
+
+    if not query:
+        return JSONResponse(status_code=400, content={"error": "Missing query."})
+
+    full_query = query
+    if brand_name and brand_name not in query:
+        full_query = f"{brand_name} 브랜드 기준으로 답변해줘. 질문: {query}"
+
+    started_at = time.perf_counter()
     try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\nShutting down server...")
-    finally:
-        server.server_close()
-    return 0
+        answer = run_once(
+            full_query,
+            model=body.model,
+            source_mode="build",
+            build_dir=BUILD_DIR,
+            api_data_root=API_DATA_ROOT,
+        )
+    except Exception as exc:
+        elapsed = time.perf_counter() - started_at
+        print(f"Chat request failed after {elapsed:.2f}s: {exc}")
+        return JSONResponse(status_code=500, content={"error": str(exc)})
+
+    elapsed = time.perf_counter() - started_at
+    print(f"Chat request completed in {elapsed:.2f}s for brand='{brand_name or '-'}'")
+    return {"answer": answer, "brand_name": brand_name}
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import uvicorn
+    host = os.environ.get("HOST", "127.0.0.1")
+    port = int(os.environ.get("PORT", "8001"))
+    uvicorn.run("web_api:app", host=host, port=port, reload=False)

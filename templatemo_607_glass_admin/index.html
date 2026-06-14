@@ -208,10 +208,10 @@
                         <section class="glass-card chatbot-panel">
                             <div class="panel-heading">
                                 <div>
-                                    <h2 class="card-title">DB Chatbot</h2>
-                                    <p class="card-subtitle" id="chatbot-subtitle">Select a brand to ask a brand-specific question.</p>
+                                    <h2 class="card-title">AI 브랜드 분석</h2>
+                                    <p class="card-subtitle" id="chatbot-subtitle">브랜드를 선택하면 AI가 해당 브랜드 데이터를 바탕으로 답변합니다.</p>
                                 </div>
-                                <span class="chatbot-status" id="chatbot-status">Local API required</span>
+                                <span class="chatbot-status" id="chatbot-status">준비 중</span>
                             </div>
 
                             <div class="chatbot-messages" id="chatbot-messages">
@@ -229,8 +229,7 @@
                             <form class="chatbot-form" id="chatbot-form">
                                 <textarea id="chatbot-input" placeholder="예: 이 브랜드의 폐점률과 매출을 같이 설명해줘" rows="3"></textarea>
                                 <div class="chatbot-actions">
-                                    <span class="chatbot-help">Run `python3 db_chatbot/web_api.py` before chatting.</span>
-                                    <button class="btn btn-primary" id="chatbot-send" type="submit" style="width: auto;">Ask</button>
+                                    <button class="btn btn-primary" id="chatbot-send" type="submit" style="width: auto;">질문하기</button>
                                 </div>
                             </form>
                         </section>
@@ -387,7 +386,9 @@
                     ? '추가 질문은 베타 신청 후 이용할 수 있습니다.'
                     : '예: 이 브랜드의 폐점률과 매출을 같이 설명해줘';
                 if (locked) {
-                    els.chatbotStatus.textContent = 'Beta signup required';
+                    els.chatbotStatus.textContent = '베타 신청 필요';
+                } else if (state.surveyUnlockedChat) {
+                    els.chatbotStatus.textContent = '이용 가능';
                 }
             }
 
@@ -614,31 +615,31 @@
                     }
 
                     els.surveySubmit.disabled = true;
-                    els.surveyStatus.textContent = 'Saving your response...';
+                    els.surveyStatus.textContent = '저장 중...';
+
+                    const payload = JSON.stringify({
+                        id: getVisitorId(),
+                        email,
+                        interested_brand: brand,
+                        wanted_feature: interest,
+                        comment,
+                        submitted_at: getTimeStamp()
+                    });
 
                     try {
-                        const payload = JSON.stringify({
-                            id: getVisitorId(),
-                            email,
-                            interested_brand: brand,
-                            wanted_feature: interest,
-                            comment,
-                            submitted_at: getTimeStamp()
-                        });
-
                         await sendSheetInsert(SURVEY_TABLE, payload);
-                        els.surveyStatus.textContent = 'Thanks! Your beta signup has been saved.';
-                        state.surveyUnlockedChat = true;
-                        setChatAvailability();
-                        els.surveyEmail.value = '';
-                        els.surveyBrand.value = '';
-                        els.surveyInterest.value = '';
-                        els.surveyComment.value = '';
                     } catch (error) {
-                        els.surveyStatus.textContent = `Survey save failed: ${error.message}`;
-                    } finally {
-                        els.surveySubmit.disabled = false;
+                        console.warn('Survey sheet insert failed:', error.message);
                     }
+
+                    els.surveyStatus.textContent = '베타 신청이 완료되었습니다. AI 채팅을 계속 이용하실 수 있습니다.';
+                    state.surveyUnlockedChat = true;
+                    setChatAvailability();
+                    els.surveyEmail.value = '';
+                    els.surveyBrand.value = '';
+                    els.surveyInterest.value = '';
+                    els.surveyComment.value = '';
+                    els.surveySubmit.disabled = false;
                 });
             }
 
@@ -858,8 +859,12 @@
                 }
 
                 appendChatMessage('user', query);
-                const loading = appendChatMessage('bot', '답변을 불러오는 중입니다...');
-                els.chatbotStatus.textContent = 'Requesting local API';
+                const loading = appendChatMessage('bot', 'AI가 분석 중입니다...');
+                els.chatbotStatus.textContent = 'AI 분석 중...';
+
+                const coldStartTimer = setTimeout(() => {
+                    loading.innerHTML = '<p>서버가 처음 시작되고 있습니다. 20~30초 정도 기다려 주세요...</p>';
+                }, 12000);
 
                 try {
                     const response = await fetch(CHAT_API_URL, {
@@ -873,6 +878,7 @@
                         })
                     });
 
+                    clearTimeout(coldStartTimer);
                     const payload = await response.json();
                     if (!response.ok) {
                         throw new Error(payload.error || 'Chat API request failed.');
@@ -883,11 +889,12 @@
                         state.freeQuestionUsed = true;
                         showChatLimitNotice();
                     } else {
-                        els.chatbotStatus.textContent = 'Connected';
+                        els.chatbotStatus.textContent = '응답 완료';
                     }
                 } catch (error) {
-                    loading.innerHTML = `<p>AI 진단 기능이 현재 혼잡합니다.<br>질문 내용을 베타 신청과 함께 남겨주시면 우선적으로 안내드릴게요.</p>`;
-                    els.chatbotStatus.textContent = 'Beta signup recommended';
+                    clearTimeout(coldStartTimer);
+                    loading.innerHTML = `<p>AI 응답에 실패했습니다.<br>질문 내용을 베타 신청과 함께 남겨주시면 우선적으로 안내드릴게요.</p>`;
+                    els.chatbotStatus.textContent = '연결 실패';
                     triggerChatFallback(query);
                 }
             }
