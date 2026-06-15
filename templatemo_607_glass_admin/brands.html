@@ -569,7 +569,19 @@
         /* ── Format Helpers ── */
         const fmt = {
             num: v => (v == null || isNaN(v)) ? '-' : Number(v).toLocaleString('ko-KR'),
-            krw: v => (v == null || isNaN(v)) ? 'N/A' : `${Number(v).toLocaleString('ko-KR')} KRW`,
+            // Values from the FTC data are in 천원 (× 1,000 to get 원).
+            // Display as Korean 억/만원 for readability.
+            krw: v => {
+                if (v == null || isNaN(v)) return 'N/A';
+                const manwon = Math.round(Number(v) / 10); // 천원 → 만원
+                if (manwon === 0) return '0원';
+                const eok = Math.floor(manwon / 10000);
+                const man = manwon % 10000;
+                const parts = [];
+                if (eok > 0) parts.push(`${eok.toLocaleString('ko-KR')}억`);
+                if (man > 0) parts.push(`${man.toLocaleString('ko-KR')}만`);
+                return (parts.join(' ') || '0') + '원';
+            },
             pct: v => (v == null || isNaN(v)) ? 'N/A' : `${(Number(v)*100).toFixed(1)}%`,
             date: v => { if (!v) return '-'; const t = String(v); return t.length===8 ? `${t.slice(0,4)}-${t.slice(4,6)}-${t.slice(6,8)}` : t; }
         };
@@ -591,8 +603,12 @@
                 const cur = byId.get(id);
                 if (!cur || row.year > cur.year) byId.set(id, row);
             });
+            // Only use the 'total_initial_cost' category rows — the other rows
+            // (education, guarantee, initial_fee, other) are components that
+            // total_initial_cost already sums. Summing all rows double-counts.
             const costs = new Map();
             costRows.forEach(row => {
+                if (row.cost_category !== 'total_initial_cost') return;
                 const k = `${row.brand_id}:${row.year}:${row.store_type||'Unknown'}`;
                 costs.set(k, (costs.get(k)||0) + (Number(row.cost_amount_krw)||0));
             });
@@ -619,8 +635,9 @@
                 const { categories, budgetMin, budgetMax } = state.userPrefs;
                 base = base.filter(b => {
                     const catOk = !categories.length || categories.includes(b.categoryMain);
-                    const cost = b.startupCost;
-                    const budOk = budgetMin == null || cost == null || (cost >= budgetMin && cost <= budgetMax);
+                    // startupCost is in 천원; budget thresholds (from chips) are in 원.
+                    const costWon = b.startupCost != null ? b.startupCost * 1000 : null;
+                    const budOk = budgetMin == null || costWon == null || (costWon >= budgetMin && costWon <= budgetMax);
                     return catOk && budOk;
                 });
             }
