@@ -162,6 +162,19 @@
         .chat-send:hover { opacity: 0.88; }
         .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
 
+        /* ── Typing Indicator ── */
+        .typing-indicator { display: flex; align-items: center; gap: 5px; padding: 2px 0; }
+        .typing-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--text-muted); animation: typingBounce 1.2s ease-in-out infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-7px); opacity: 1; }
+        }
+
         @media (max-width: 768px) {
             .step-trail { display: none; }
             .chat-body { padding: 14px 16px; }
@@ -379,7 +392,12 @@
                 addMsg('bot', '먼저 위에서 브랜드를 선택해 주세요.'); return;
             }
             addMsg('user', query);
-            const loading = addMsg('bot', 'AI가 분석 중입니다...');
+            // Typing indicator bubble
+            const loading = document.createElement('div');
+            loading.className = 'chat-msg bot';
+            loading.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+            els.messages.appendChild(loading);
+            els.messages.scrollTop = els.messages.scrollHeight;
             setStatus('분석 중...', 'thinking');
             els.send.disabled = true;
 

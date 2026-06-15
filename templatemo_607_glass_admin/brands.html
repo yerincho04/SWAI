@@ -254,6 +254,43 @@
         .trend-table td { padding: 8px 10px; border-bottom: 1px solid var(--glass-border); color: var(--text-primary); }
         .trend-table tr:last-child td { border-bottom: none; }
 
+        /* ── List Loading State ── */
+        .list-loading { padding: 4px 0; }
+        .skeleton-card {
+            height: 82px; border-radius: 12px; margin-bottom: 8px;
+            background: linear-gradient(90deg, var(--glass-border) 25%, rgba(255,255,255,0.08) 50%, var(--glass-border) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.3s infinite;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* ── Cost Breakdown ── */
+        .cost-breakdown { display: flex; flex-direction: column; gap: 6px; }
+        .cost-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-radius: 8px; font-size: 0.85rem; }
+        .cost-row:nth-child(odd) { background: rgba(255,255,255,0.03); }
+        .cost-label { color: var(--text-secondary); }
+        .cost-val { font-weight: 600; color: var(--text-primary); }
+        .cost-row.cost-total { border-top: 1px solid var(--glass-border); margin-top: 4px; padding-top: 10px; }
+        .cost-row.cost-total .cost-label { color: var(--text-primary); font-weight: 600; }
+        .cost-row.cost-total .cost-val { color: var(--emerald); font-size: 0.95rem; }
+
+        /* ── Budget Range in Filter Panel ── */
+        .budget-presets-scroll {
+            display: flex; gap: 7px; overflow-x: auto; padding-bottom: 8px;
+            scrollbar-width: thin; scrollbar-color: var(--glass-border) transparent;
+        }
+        .budget-presets-scroll .fchip { flex-shrink: 0; }
+        .budget-range-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .budget-range-input {
+            flex: 1; padding: 7px 10px; border-radius: 8px; min-width: 0;
+            border: 1.5px solid var(--glass-border); background: transparent;
+            color: var(--text-primary); font-size: 0.82rem; font-family: inherit; outline: none;
+            transition: border-color 0.18s;
+        }
+        .budget-range-input:focus { border-color: var(--emerald); }
+        .budget-range-sep { color: var(--text-muted); font-size: 0.85rem; flex-shrink: 0; }
+        .budget-range-unit { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+
         /* ── Compare Tray ── */
         .compare-tray {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -377,13 +414,23 @@
                         <div class="filter-chip-grid" id="fp-category-chips"></div>
                     </div>
                     <div class="filter-panel-section">
-                        <div class="filter-panel-label">창업 예산 (하나 선택)</div>
-                        <div class="filter-chip-grid" id="fp-budget-chips">
-                            <button class="fchip budget" data-min="0" data-max="50000000">5천만원 미만</button>
-                            <button class="fchip budget" data-min="50000000" data-max="100000000">5천만 ~ 1억</button>
-                            <button class="fchip budget" data-min="100000000" data-max="300000000">1억 ~ 3억</button>
-                            <button class="fchip budget" data-min="300000000" data-max="500000000">3억 ~ 5억</button>
-                            <button class="fchip budget" data-min="500000000" data-max="999999999999">5억 이상</button>
+                        <div class="filter-panel-label">창업 예산 — 빠른 선택 또는 직접 입력 (만원)</div>
+                        <!-- Horizontally scrollable preset chips -->
+                        <div class="budget-presets-scroll" id="fp-budget-presets">
+                            <button class="fchip budget" data-min="0" data-max="5000">5천만 미만</button>
+                            <button class="fchip budget" data-min="5000" data-max="10000">5천만~1억</button>
+                            <button class="fchip budget" data-min="10000" data-max="20000">1억~2억</button>
+                            <button class="fchip budget" data-min="20000" data-max="30000">2억~3억</button>
+                            <button class="fchip budget" data-min="30000" data-max="50000">3억~5억</button>
+                            <button class="fchip budget" data-min="50000" data-max="100000">5억~10억</button>
+                            <button class="fchip budget" data-min="100000" data-max="999999">10억 이상</button>
+                        </div>
+                        <!-- Custom range inputs -->
+                        <div class="budget-range-row">
+                            <input type="number" id="fp-budget-min" class="budget-range-input" min="0" step="500" placeholder="최소">
+                            <span class="budget-range-sep">~</span>
+                            <input type="number" id="fp-budget-max" class="budget-range-input" min="0" step="500" placeholder="최대">
+                            <span class="budget-range-unit">만원</span>
                         </div>
                     </div>
                 </div>
@@ -402,7 +449,15 @@
                     <button class="tab-btn active" id="tab-all">전체</button>
                     <button class="tab-btn" id="tab-saved">저장됨<span class="tab-count" id="saved-count"></span></button>
                 </div>
-                <div id="brand-list"></div>
+                <!-- Skeleton loading state -->
+                <div class="list-loading" id="brand-list-loading">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+                <div id="brand-list" style="display:none;"></div>
             </div>
 
             <!-- Brand Detail -->
@@ -448,6 +503,12 @@
                             <div class="brand-fact"><dt>매장 유형</dt><dd id="d-store-type">-</dd></div>
                             <div class="brand-fact"><dt>기준 연도</dt><dd id="d-year">-</dd></div>
                         </div>
+                    </div>
+
+                    <!-- Startup Cost Breakdown -->
+                    <div class="detail-section" id="d-cost-section" style="display:none;">
+                        <h3>창업 비용 상세</h3>
+                        <div class="cost-breakdown" id="d-cost-breakdown"></div>
                     </div>
 
                     <div class="detail-section">
@@ -603,27 +664,36 @@
                 const cur = byId.get(id);
                 if (!cur || row.year > cur.year) byId.set(id, row);
             });
-            // Only use the 'total_initial_cost' category rows — the other rows
-            // (education, guarantee, initial_fee, other) are components that
-            // total_initial_cost already sums. Summing all rows double-counts.
-            const costs = new Map();
+            // Collect cost breakdown per brand/year/store_type.
+            // total_initial_cost is the authoritative sum; individual categories
+            // (education, guarantee, initial_fee, other) are its components.
+            // We store them separately so the detail panel can show a breakdown.
+            const costData = new Map();
             costRows.forEach(row => {
-                if (row.cost_category !== 'total_initial_cost') return;
                 const k = `${row.brand_id}:${row.year}:${row.store_type||'Unknown'}`;
-                costs.set(k, (costs.get(k)||0) + (Number(row.cost_amount_krw)||0));
+                if (!costData.has(k)) costData.set(k, { total: 0, breakdown: {} });
+                const entry = costData.get(k);
+                entry.breakdown[row.cost_category] = Number(row.cost_amount_krw) || 0;
+                if (row.cost_category === 'total_initial_cost') {
+                    entry.total = Number(row.cost_amount_krw) || 0;
+                }
             });
             return master.map(b => {
                 const ls = byId.get(b.brand_id) || null;
                 const trends = (trendsById.get(b.brand_id) || []).sort((a,c) => c.year - a.year);
-                let startupCost = null, storeType = '-';
+                let startupCost = null, startupBreakdown = {}, storeType = '-';
                 if (ls) {
-                    const matches = [...costs.entries()]
+                    const matches = [...costData.entries()]
                         .filter(([k]) => k.startsWith(`${b.brand_id}:${ls.year}:`))
-                        .map(([k,t]) => ({ t, st: k.split(':')[2] }))
-                        .sort((a,c) => c.t - a.t);
-                    if (matches.length) { startupCost = matches[0].t; storeType = matches[0].st; }
+                        .map(([k, v]) => ({ ...v, st: k.split(':')[2] }))
+                        .sort((a, c) => c.total - a.total);
+                    if (matches.length) {
+                        startupCost = matches[0].total;
+                        startupBreakdown = matches[0].breakdown;
+                        storeType = matches[0].st;
+                    }
                 }
-                return { brandId: b.brand_id, brandName: b.brand_name, companyName: b.company_name, categoryMain: b.category_main, categorySub: b.category_sub, franchiseStartDate: b.franchise_start_date, latestStats: ls, startupCost, storeType, trends };
+                return { brandId: b.brand_id, brandName: b.brand_name, companyName: b.company_name, categoryMain: b.category_main, categorySub: b.category_sub, franchiseStartDate: b.franchise_start_date, latestStats: ls, startupCost, startupBreakdown, storeType, trends };
             }).sort((a,b) => (b.latestStats?.store_count||0) - (a.latestStats?.store_count||0));
         }
 
@@ -635,9 +705,11 @@
                 const { categories, budgetMin, budgetMax } = state.userPrefs;
                 base = base.filter(b => {
                     const catOk = !categories.length || categories.includes(b.categoryMain);
-                    // startupCost is in 천원; budget thresholds (from chips) are in 원.
-                    const costWon = b.startupCost != null ? b.startupCost * 1000 : null;
-                    const budOk = budgetMin == null || costWon == null || (costWon >= budgetMin && costWon <= budgetMax);
+                    // startupCost is in 천원; convert to 만원 (÷10) for comparison.
+                    // budgetMin/Max stored in prefs are now in 만원.
+                    const costManwon = b.startupCost != null ? Math.round(b.startupCost / 10) : null;
+                    const budOk = budgetMin == null || costManwon == null ||
+                        (costManwon >= budgetMin && (budgetMax == null || costManwon <= budgetMax));
                     return catOk && budOk;
                 });
             }
@@ -660,9 +732,16 @@
                 el.innerHTML = '<span class="filter-none">없음 — 전체 브랜드</span>';
                 return;
             }
+            const budgetLabel = (() => {
+                const { budgetMin, budgetMax } = state.userPrefs;
+                if (budgetMin == null && budgetMax == null) return null;
+                if (budgetMin == null) return `${budgetMax.toLocaleString('ko-KR')}만원 이하`;
+                if (budgetMax == null || budgetMax >= 999999) return `${budgetMin.toLocaleString('ko-KR')}만원 이상`;
+                return `${budgetMin.toLocaleString('ko-KR')}~${budgetMax.toLocaleString('ko-KR')}만원`;
+            })();
             const parts = [
-                state.userPrefs.categories.length ? state.userPrefs.categories.join(', ') : null,
-                state.userPrefs.budgetMin != null ? document.querySelector(`#fp-budget-chips .fchip[data-min="${state.userPrefs.budgetMin}"]`)?.textContent || null : null
+                state.userPrefs.categories?.length ? state.userPrefs.categories.join(', ') : null,
+                budgetLabel
             ].filter(Boolean);
             el.innerHTML = parts.map(p => `<span class="filter-active-chip">${p}</span>`).join('');
         }
@@ -754,6 +833,27 @@
             document.getElementById('d-trend-body').innerHTML = b.trends.slice(0,6).map(r => `
                 <tr><td>${r.year}</td><td>${fmt.num(r.store_count)}</td><td>${fmt.num(r.new_stores)}</td><td>${fmt.num(r.closed_stores)}</td><td>${fmt.krw(r.avg_sales_krw)}</td></tr>
             `).join('');
+            // Startup cost breakdown
+            const costLabels = { initial_fee: '가맹비', guarantee: '보증금', education: '교육비', other: '기타 비용' };
+            const costSection = document.getElementById('d-cost-section');
+            const costEl = document.getElementById('d-cost-breakdown');
+            const bd = b.startupBreakdown || {};
+            const componentKeys = Object.keys(costLabels).filter(k => bd[k] != null);
+            if (componentKeys.length > 0 || bd.total_initial_cost != null) {
+                costSection.style.display = 'block';
+                costEl.innerHTML =
+                    componentKeys.map(k => `
+                        <div class="cost-row">
+                            <span class="cost-label">${costLabels[k]}</span>
+                            <span class="cost-val">${fmt.krw(bd[k])}</span>
+                        </div>`).join('') +
+                    `<div class="cost-row cost-total">
+                        <span class="cost-label">합계</span>
+                        <span class="cost-val">${fmt.krw(b.startupCost)}</span>
+                    </div>`;
+            } else {
+                costSection.style.display = 'none';
+            }
             updateSaveBtn();
             updateCompareBtn();
             const chatBtn = document.getElementById('d-chat-btn');
@@ -830,6 +930,7 @@
 
         /* ── Filter Panel ── */
         function populateFilterPanel() {
+            // Category chips
             const cats = [...new Set(state.brands.map(b => b.categoryMain).filter(Boolean))].sort();
             const container = document.getElementById('fp-category-chips');
             container.innerHTML = '';
@@ -841,11 +942,31 @@
                 btn.addEventListener('click', () => btn.classList.toggle('selected'));
                 container.appendChild(btn);
             });
-            const budgetBtns = document.querySelectorAll('#fp-budget-chips .fchip');
-            budgetBtns.forEach(btn => {
+
+            // Budget — preset chips (in 만원) + custom range inputs
+            const presetBtns = document.querySelectorAll('#fp-budget-presets .fchip');
+            const minInput = document.getElementById('fp-budget-min');
+            const maxInput = document.getElementById('fp-budget-max');
+
+            // Restore current prefs into inputs
+            minInput.value = state.userPrefs?.budgetMin != null ? state.userPrefs.budgetMin : '';
+            maxInput.value = (state.userPrefs?.budgetMax != null && state.userPrefs.budgetMax < 999999) ? state.userPrefs.budgetMax : '';
+
+            presetBtns.forEach(btn => {
                 btn.classList.remove('selected');
-                if (state.userPrefs && Number(btn.dataset.min) === state.userPrefs.budgetMin) btn.classList.add('selected');
-                btn.onclick = () => { budgetBtns.forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); };
+                const btnMin = Number(btn.dataset.min), btnMax = Number(btn.dataset.max);
+                if (state.userPrefs?.budgetMin === btnMin && state.userPrefs?.budgetMax === btnMax) btn.classList.add('selected');
+                btn.onclick = () => {
+                    presetBtns.forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    minInput.value = btnMin === 0 ? '' : btnMin;
+                    maxInput.value = btnMax >= 999999 ? '' : btnMax;
+                };
+            });
+
+            // Typing in inputs deselects preset chips
+            [minInput, maxInput].forEach(inp => {
+                inp.oninput = () => presetBtns.forEach(b => b.classList.remove('selected'));
             });
         }
 
@@ -868,12 +989,21 @@
 
         document.getElementById('fp-apply-btn').addEventListener('click', () => {
             const cats = [...document.querySelectorAll('#fp-category-chips .fchip.selected')].map(b => b.textContent.trim());
-            const budgetBtn = document.querySelector('#fp-budget-chips .fchip.selected');
+            const minRaw = document.getElementById('fp-budget-min').value;
+            const maxRaw = document.getElementById('fp-budget-max').value;
+            const budgetMin = minRaw !== '' ? Number(minRaw) : null; // 만원
+            const budgetMax = maxRaw !== '' ? Number(maxRaw) : null; // 만원
+            const budgetLabel = (() => {
+                if (budgetMin == null && budgetMax == null) return null;
+                if (budgetMin == null) return `${budgetMax.toLocaleString('ko-KR')}만원 이하`;
+                if (budgetMax == null) return `${budgetMin.toLocaleString('ko-KR')}만원 이상`;
+                return `${budgetMin.toLocaleString('ko-KR')}~${budgetMax.toLocaleString('ko-KR')}만원`;
+            })();
             const prefs = {
                 categories: cats,
-                budgetMin: budgetBtn ? Number(budgetBtn.dataset.min) : null,
-                budgetMax: budgetBtn ? Number(budgetBtn.dataset.max) : null,
-                label: [cats.length ? cats.join(', ') : null, budgetBtn ? budgetBtn.textContent.trim() : null].filter(Boolean).join(' · ')
+                budgetMin,
+                budgetMax,
+                label: [cats.length ? cats.join(', ') : null, budgetLabel].filter(Boolean).join(' · ')
             };
             state.userPrefs = prefs;
             localStorage.setItem('brandhub_prefs', JSON.stringify(prefs));
@@ -888,7 +1018,9 @@
             state.userPrefs = null;
             localStorage.removeItem('brandhub_prefs');
             document.querySelectorAll('#fp-category-chips .fchip').forEach(b => b.classList.remove('selected'));
-            document.querySelectorAll('#fp-budget-chips .fchip').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('#fp-budget-presets .fchip').forEach(b => b.classList.remove('selected'));
+            document.getElementById('fp-budget-min').value = '';
+            document.getElementById('fp-budget-max').value = '';
             applyFilter();
         });
 
@@ -921,6 +1053,8 @@
         /* ── Load ── */
         async function loadData() {
             document.getElementById('filter-count').textContent = '로딩 중...';
+            document.getElementById('brand-list-loading').style.display = 'block';
+            document.getElementById('brand-list').style.display = 'none';
             try {
                 const [master, yearStats, costs] = await Promise.all([
                     fetchJson(BRAND_MASTER_URLS),
@@ -930,9 +1064,13 @@
                 state.brands = buildBrandDataset(master, yearStats, costs);
                 state.filteredBrands = state.brands;
                 state.selectedBrand = state.brands[0] || null;
+                document.getElementById('brand-list-loading').style.display = 'none';
+                document.getElementById('brand-list').style.display = 'block';
                 applyFilter();
                 logVisitorAccess();
             } catch (e) {
+                document.getElementById('brand-list-loading').style.display = 'none';
+                document.getElementById('brand-list').style.display = 'block';
                 document.getElementById('filter-count').textContent = '오류';
                 document.getElementById('brand-list').innerHTML = `<div class="brand-list-empty">데이터를 불러오지 못했습니다.<br>${e.message}</div>`;
             }
