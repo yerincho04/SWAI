@@ -338,12 +338,12 @@
                 opt.textContent = b.category_main ? `${b.brand_name} · ${b.category_main}` : b.brand_name;
                 els.brandSelect.appendChild(opt);
             });
-            if (cur && list.some(b => b.brand_id === cur)) els.brandSelect.value = cur;
+            if (cur && list.some(b => b.brand_id == cur)) els.brandSelect.value = cur;
         }
 
         function renderSavedRow() {
             const ids = JSON.parse(localStorage.getItem('brandhub_saved') || '[]');
-            const saved = ids.map(id => state.brands.find(b => b.brand_id === id)).filter(Boolean);
+            const saved = ids.map(id => state.brands.find(b => b.brand_id == id)).filter(Boolean);
             if (!saved.length) { els.savedRow.style.display = 'none'; return; }
             els.savedRow.style.display = 'flex';
             els.savedRow.innerHTML = '<span class="saved-row-label">저장한 브랜드</span>';
@@ -362,7 +362,7 @@
         }
 
         function selectBrand(id) {
-            const brand = state.brands.find(b => b.brand_id === id);
+            const brand = state.brands.find(b => b.brand_id == id);
             state.selectedBrand = brand || null;
             if (brand) {
                 els.selectedPill.innerHTML = `<span class="selected-pill">♥ ${brand.brand_name}</span>`;
