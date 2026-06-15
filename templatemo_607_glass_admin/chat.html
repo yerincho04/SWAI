@@ -4,69 +4,168 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 브랜드 상담 — Brand Hub</title>
-    <meta name="description" content="AI에게 프랜차이즈 브랜드에 대해 물어보세요.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="templatemo-glass-admin-style.css">
     <style>
-        /* --- Sidebar Nav --- */
-        .sidebar-nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; margin-top: 8px; }
-        .sidebar-nav-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-radius: 10px; font-size: 0.875rem;
-            color: var(--text-secondary); text-decoration: none; transition: all 0.2s;
-        }
-        .sidebar-nav-item:hover { background: var(--glass-border); color: var(--text-primary); }
-        .sidebar-nav-item.active { background: var(--emerald); color: #fff; }
-        .sidebar-nav-item svg { flex-shrink: 0; }
+        html, body { height: 100%; margin: 0; overflow: hidden; }
 
-        /* --- Chat Layout --- */
-        .chat-layout { display: flex; flex-direction: column; gap: 20px; }
+        .chat-page {
+            height: 100vh; display: flex; flex-direction: column;
+            position: relative; z-index: 1;
+        }
 
-        /* --- Brand Selector --- */
-        .brand-selector-row {
-            display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap;
+        /* ── Header (same as brands.html) ── */
+        .app-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px; height: 58px; flex-shrink: 0;
+            background: var(--glass-bg); border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px); position: relative; z-index: 110;
         }
-        .brand-select-group { flex: 1; min-width: 180px; }
-        .brand-select-group label {
-            display: block; font-size: 0.82rem; font-weight: 600;
-            color: var(--text-secondary); margin-bottom: 8px;
+        .app-header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .app-logo-icon {
+            width: 32px; height: 32px; background: var(--emerald); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 700; font-size: 0.9rem;
         }
-        .brand-filter-input, .brand-select {
-            width: 100%; padding: 10px 14px;
+        .app-logo-text { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+        .app-header-actions { display: flex; align-items: center; gap: 10px; }
+
+        .step-trail {
+            display: flex; align-items: center; gap: 5px;
+            position: absolute; left: 50%; transform: translateX(-50%);
+        }
+        .step-trail-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.78rem; color: var(--text-muted); white-space: nowrap;
+        }
+        .step-trail-item.done { color: var(--text-secondary); cursor: pointer; }
+        .step-trail-item.done:hover { color: var(--emerald); }
+        .step-trail-item.active { color: var(--emerald); font-weight: 600; }
+        .step-num {
+            width: 20px; height: 20px; border-radius: 50%; font-size: 0.68rem; font-weight: 700;
+            border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center;
+        }
+        .step-trail-item.active .step-num { background: var(--emerald); border-color: var(--emerald); color: #fff; }
+        .step-trail-item.done .step-num { background: var(--text-muted); border-color: transparent; color: #fff; }
+        .step-sep { color: var(--glass-border); font-size: 0.8rem; }
+
+        /* ── Back link button style ── */
+        .back-btn {
+            display: flex; align-items: center; gap: 6px; padding: 6px 14px;
             border-radius: 10px; border: 1.5px solid var(--glass-border);
-            background: var(--glass-bg); color: var(--text-primary);
-            font-size: 0.9rem; font-family: inherit; outline: none;
-            box-sizing: border-box; transition: border-color 0.2s;
+            background: transparent; color: var(--text-secondary);
+            cursor: pointer; font-size: 0.83rem; font-family: inherit;
+            transition: all 0.18s; text-decoration: none; white-space: nowrap;
         }
-        .brand-filter-input:focus, .brand-select:focus { border-color: var(--emerald); }
-        .brand-select { cursor: pointer; }
+        .back-btn:hover { border-color: var(--emerald); color: var(--emerald); }
 
-        .selected-brand-pill {
+        /* ── Chat Body ── */
+        .chat-body {
+            flex: 1; overflow-y: auto; padding: 24px 28px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+
+        /* ── Brand Selector Card ── */
+        .selector-card {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 20px 22px; flex-shrink: 0;
+        }
+        .selector-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .selector-card-header h2 { font-size: 1rem; font-weight: 700; margin: 0; }
+        .selector-card-header p { font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0; }
+        .selected-pill {
             display: inline-flex; align-items: center; gap: 6px;
-            background: var(--emerald); color: #fff; border-radius: 20px;
-            padding: 5px 14px; font-size: 0.85rem; font-weight: 500;
+            background: var(--emerald); color: #fff; border-radius: 16px;
+            padding: 5px 14px; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;
         }
 
-        /* --- Chat Panel --- */
-        .chat-main-card .chatbot-messages {
-            min-height: 340px; max-height: 500px;
+        .selector-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+        .selector-group { flex: 1; min-width: 150px; }
+        .selector-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .selector-input, .selector-select {
+            width: 100%; padding: 9px 12px; border-radius: 10px;
+            border: 1.5px solid var(--glass-border); background: var(--glass-bg);
+            color: var(--text-primary); font-size: 0.88rem; font-family: inherit;
+            outline: none; box-sizing: border-box; transition: border-color 0.18s;
         }
+        .selector-input:focus, .selector-select:focus { border-color: var(--emerald); }
+        .selector-select { cursor: pointer; }
 
-        /* --- Saved Brand Quick-Pick --- */
-        .saved-brands-row {
-            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
-        }
-        .saved-brands-label {
-            font-size: 0.78rem; color: var(--text-muted); width: 100%; margin-bottom: 2px;
-        }
-        .saved-brand-chip {
-            padding: 5px 12px; border-radius: 16px; font-size: 0.82rem; cursor: pointer;
+        /* Saved brands quick-pick */
+        .saved-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--glass-border); align-items: center; }
+        .saved-row-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+        .saved-chip {
+            padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; cursor: pointer;
             border: 1.5px solid var(--coral); color: var(--coral); background: transparent;
-            transition: all 0.2s;
+            font-family: inherit; transition: all 0.15s;
         }
-        .saved-brand-chip:hover { background: var(--coral); color: #fff; }
+        .saved-chip:hover { background: var(--coral); color: #fff; }
+
+        /* ── Chat Card ── */
+        .chat-card {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 14px; display: flex; flex-direction: column;
+            flex: 1; min-height: 0; overflow: hidden;
+        }
+        .chat-card-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .chat-card-header h2 { font-size: 0.95rem; font-weight: 700; margin: 0 0 2px; }
+        .chat-card-header p { font-size: 0.78rem; color: var(--text-muted); margin: 0; }
+        .chatbot-status {
+            padding: 4px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;
+            background: var(--glass-border); color: var(--text-secondary); white-space: nowrap;
+        }
+        .chatbot-status.ready { background: rgba(16,185,129,0.12); color: var(--emerald); }
+        .chatbot-status.thinking { background: rgba(99,102,241,0.12); color: #6366f1; }
+        .chatbot-status.error { background: rgba(239,68,68,0.12); color: #ef4444; }
+
+        .chatbot-messages {
+            flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .chat-msg {
+            max-width: 88%; border-radius: 14px; padding: 12px 16px; font-size: 0.88rem; line-height: 1.6;
+        }
+        .chat-msg.bot { background: var(--glass-border); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-msg.user { background: var(--emerald); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+
+        .chat-prompts {
+            display: flex; gap: 7px; flex-wrap: wrap;
+            padding: 10px 20px; border-top: 1px solid var(--glass-border); flex-shrink: 0;
+        }
+        .prompt-chip {
+            padding: 5px 13px; border-radius: 14px; font-size: 0.78rem; cursor: pointer;
+            border: 1.5px solid var(--glass-border); background: transparent;
+            color: var(--text-secondary); font-family: inherit; transition: all 0.15s;
+        }
+        .prompt-chip:hover { border-color: var(--emerald); color: var(--emerald); }
+
+        .chat-form {
+            padding: 12px 16px; border-top: 1px solid var(--glass-border);
+            display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
+        }
+        .chat-textarea {
+            flex: 1; padding: 10px 14px; border-radius: 10px;
+            border: 1.5px solid var(--glass-border); background: transparent;
+            color: var(--text-primary); font-size: 0.88rem; font-family: inherit;
+            resize: none; outline: none; transition: border-color 0.18s; line-height: 1.5;
+        }
+        .chat-textarea:focus { border-color: var(--emerald); }
+        .chat-send {
+            padding: 10px 22px; border-radius: 10px; background: var(--emerald); color: #fff;
+            border: none; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: opacity 0.18s; white-space: nowrap; flex-shrink: 0;
+        }
+        .chat-send:hover { opacity: 0.88; }
+        .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        @media (max-width: 768px) {
+            .step-trail { display: none; }
+            .chat-body { padding: 14px 16px; }
+        }
     </style>
 </head>
 <body>
@@ -75,136 +174,109 @@
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 
-    <div class="dashboard dashboard-single">
-        <aside class="sidebar sidebar-single" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">B</div>
-                <span class="logo-text">Brand Hub</span>
-            </div>
+    <div class="chat-page">
 
-            <nav class="sidebar-nav">
-                <a class="sidebar-nav-item" href="index.html">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-                    </svg>
-                    브랜드 탐색
-                </a>
-                <a class="sidebar-nav-item active" href="chat.html">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    AI 상담
-                </a>
-            </nav>
+        <!-- Header -->
+        <header class="app-header">
+            <a class="app-header-logo" href="index.html">
+                <div class="app-logo-icon">B</div>
+                <span class="app-logo-text">Brand Hub</span>
+            </a>
 
-            <div class="sidebar-footer">
-                <div class="single-highlight-card">
-                    <span>Model</span>
-                    <strong>GPT-4.1 mini</strong>
+            <div class="step-trail">
+                <div class="step-trail-item done" onclick="location.href='index.html'" style="cursor:pointer;">
+                    <span class="step-num">✓</span><span>관심 설정</span>
                 </div>
-                <div class="single-highlight-card" style="margin-top:8px;">
-                    <span>Source</span>
-                    <strong>공정위 가맹 공개정보</strong>
+                <span class="step-sep">——</span>
+                <div class="step-trail-item done" onclick="location.href='brands.html'" style="cursor:pointer;">
+                    <span class="step-num">✓</span><span>브랜드 탐색</span>
+                </div>
+                <span class="step-sep">——</span>
+                <div class="step-trail-item active">
+                    <span class="step-num">3</span><span>AI 상담</span>
                 </div>
             </div>
-        </aside>
 
-        <main class="main-content main-content-single">
-            <nav class="navbar">
-                <div class="page-header">
-                    <h1 class="page-title">AI 브랜드 상담</h1>
+            <div class="app-header-actions">
+                <a class="back-btn" href="brands.html">← 브랜드 탐색</a>
+                <button class="nav-btn" id="theme-toggle" title="Toggle Light/Dark Mode">
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2"/><path d="M12 20v2"/>
+                        <path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
+                        <path d="M2 12h2"/><path d="M20 12h2"/>
+                        <path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>
+                    </svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Body -->
+        <div class="chat-body">
+
+            <!-- Brand Selector -->
+            <div class="selector-card">
+                <div class="selector-card-header">
+                    <div>
+                        <h2>분석할 브랜드 선택</h2>
+                        <p>브랜드를 선택하면 AI가 해당 데이터 기반으로 답변합니다.</p>
+                    </div>
+                    <div id="selected-pill"></div>
                 </div>
-                <div class="navbar-right">
-                    <a class="card-btn" href="index.html">← 브랜드 탐색기</a>
-                    <button class="nav-btn" id="theme-toggle" title="Toggle Light/Dark Mode">
-                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="4"/>
-                            <path d="M12 2v2"/><path d="M12 20v2"/>
-                            <path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
-                            <path d="M2 12h2"/><path d="M20 12h2"/>
-                            <path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>
-                        </svg>
-                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                        </svg>
-                    </button>
+
+                <div class="selector-row">
+                    <div class="selector-group">
+                        <label for="brand-filter">검색</label>
+                        <input type="text" id="brand-filter" class="selector-input" placeholder="이름 또는 업종으로 필터...">
+                    </div>
+                    <div class="selector-group" style="flex:2;">
+                        <label for="brand-select">브랜드</label>
+                        <select id="brand-select" class="selector-select">
+                            <option value="">브랜드를 선택해 주세요</option>
+                        </select>
+                    </div>
                 </div>
-            </nav>
 
-            <section class="brand-hub">
-                <div class="chat-layout">
-
-                    <!-- Brand Selector -->
-                    <section class="glass-card" style="padding:24px;">
-                        <div class="panel-heading" style="margin-bottom:16px;">
-                            <div>
-                                <h2 class="card-title">브랜드 선택</h2>
-                                <p class="card-subtitle">분석할 브랜드를 선택하면 AI가 해당 데이터 기반으로 답변합니다.</p>
-                            </div>
-                            <div id="selected-brand-display"></div>
-                        </div>
-
-                        <div class="brand-selector-row">
-                            <div class="brand-select-group">
-                                <label for="brand-filter-input">브랜드 검색</label>
-                                <input type="text" id="brand-filter-input" class="brand-filter-input" placeholder="이름 또는 업종으로 필터...">
-                            </div>
-                            <div class="brand-select-group" style="flex:2;">
-                                <label for="brand-select">브랜드 선택</label>
-                                <select id="brand-select" class="brand-select">
-                                    <option value="">브랜드를 선택해 주세요</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Saved brands quick-pick -->
-                        <div id="saved-brands-row" class="saved-brands-row" style="display:none;">
-                            <span class="saved-brands-label">저장한 브랜드</span>
-                        </div>
-                    </section>
-
-                    <!-- Chatbot -->
-                    <section class="glass-card chatbot-panel chat-main-card">
-                        <div class="panel-heading">
-                            <div>
-                                <h2 class="card-title">AI 브랜드 분석</h2>
-                                <p class="card-subtitle" id="chatbot-subtitle">브랜드를 선택한 뒤 질문을 보내면 AI가 데이터를 기반으로 답변합니다.</p>
-                            </div>
-                            <span class="chatbot-status" id="chatbot-status">준비 중</span>
-                        </div>
-
-                        <div class="chatbot-messages" id="chatbot-messages">
-                            <div class="chatbot-message bot">
-                                <p>위에서 브랜드를 선택한 뒤 질문을 보내주세요.<br>점포 수 추이, 창업 비용, 운영 안정성 등 무엇이든 물어보세요.</p>
-                            </div>
-                        </div>
-
-                        <div class="chatbot-prompts">
-                            <button class="card-btn prompt-btn" type="button" data-prompt="최근 점포 수 추이를 요약해줘">최근 추이 요약</button>
-                            <button class="card-btn prompt-btn" type="button" data-prompt="창업 비용 관점에서 설명해줘">창업 비용 설명</button>
-                            <button class="card-btn prompt-btn" type="button" data-prompt="운영 안정성 관점에서 평가해줘">운영 안정성 평가</button>
-                            <button class="card-btn prompt-btn" type="button" data-prompt="이 브랜드의 장단점을 요약해줘">장단점 요약</button>
-                        </div>
-
-                        <form class="chatbot-form" id="chatbot-form">
-                            <textarea id="chatbot-input" placeholder="예: 이 브랜드의 폐점률과 매출을 같이 설명해줘" rows="3"></textarea>
-                            <div class="chatbot-actions">
-                                <button class="btn btn-primary" id="chatbot-send" type="submit" style="width:auto;">질문하기</button>
-                            </div>
-                        </form>
-                    </section>
-
+                <div class="saved-row" id="saved-row" style="display:none;">
+                    <span class="saved-row-label">저장한 브랜드</span>
                 </div>
-            </section>
-        </main>
+            </div>
+
+            <!-- Chat Card -->
+            <div class="chat-card">
+                <div class="chat-card-header">
+                    <div>
+                        <h2>AI 브랜드 분석</h2>
+                        <p id="chat-subtitle">위에서 브랜드를 선택하면 해당 데이터를 기반으로 답변합니다.</p>
+                    </div>
+                    <span class="chatbot-status" id="chat-status">준비 중</span>
+                </div>
+
+                <div class="chatbot-messages" id="chat-messages">
+                    <div class="chat-msg bot">
+                        <p>브랜드를 선택한 뒤 궁금한 점을 물어보세요.<br>점포 수 추이, 창업 비용, 운영 안정성 등 무엇이든 괜찮습니다.</p>
+                    </div>
+                </div>
+
+                <div class="chat-prompts">
+                    <button class="prompt-chip" data-prompt="최근 점포 수 추이를 요약해줘">최근 추이 요약</button>
+                    <button class="prompt-chip" data-prompt="창업 비용 관점에서 설명해줘">창업 비용</button>
+                    <button class="prompt-chip" data-prompt="운영 안정성 관점에서 평가해줘">운영 안정성</button>
+                    <button class="prompt-chip" data-prompt="이 브랜드의 장단점을 요약해줘">장단점 요약</button>
+                    <button class="prompt-chip" data-prompt="비슷한 업종의 다른 브랜드와 비교하면?">타 브랜드 비교</button>
+                </div>
+
+                <form class="chat-form" id="chat-form">
+                    <textarea id="chat-input" class="chat-textarea" rows="2" placeholder="예: 이 브랜드의 폐점률과 매출 추이를 함께 설명해줘"></textarea>
+                    <button type="submit" class="chat-send" id="chat-send">질문하기</button>
+                </form>
+            </div>
+
+        </div>
     </div>
-
-    <button class="mobile-menu-toggle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-    </button>
 
     <script src="app-config.js"></script>
     <script src="templatemo-glass-admin-script.js"></script>
@@ -220,173 +292,148 @@
             ? window.APP_CONFIG.chatApiUrl
             : 'http://127.0.0.1:8001/api/chat';
 
-        const state = {
-            brands: [],
-            selectedBrand: null,
-            filterText: ''
-        };
+        const state = { brands: [], selectedBrand: null };
 
         const els = {
-            brandFilterInput: document.getElementById('brand-filter-input'),
+            brandFilter: document.getElementById('brand-filter'),
             brandSelect: document.getElementById('brand-select'),
-            selectedBrandDisplay: document.getElementById('selected-brand-display'),
-            savedBrandsRow: document.getElementById('saved-brands-row'),
-            chatbotMessages: document.getElementById('chatbot-messages'),
-            chatbotSubtitle: document.getElementById('chatbot-subtitle'),
-            chatbotStatus: document.getElementById('chatbot-status'),
-            chatbotForm: document.getElementById('chatbot-form'),
-            chatbotInput: document.getElementById('chatbot-input')
+            selectedPill: document.getElementById('selected-pill'),
+            savedRow: document.getElementById('saved-row'),
+            messages: document.getElementById('chat-messages'),
+            subtitle: document.getElementById('chat-subtitle'),
+            status: document.getElementById('chat-status'),
+            form: document.getElementById('chat-form'),
+            input: document.getElementById('chat-input'),
+            send: document.getElementById('chat-send')
         };
 
-        async function fetchJsonWithFallback(urls) {
-            let lastError = null;
+        async function fetchJson(urls) {
             for (const url of urls) {
-                try {
-                    const r = await fetch(url);
-                    if (!r.ok) { lastError = new Error(`${r.status} at ${url}`); continue; }
-                    return await r.json();
-                } catch (e) { lastError = e; }
+                try { const r = await fetch(url); if (r.ok) return await r.json(); } catch {}
             }
-            throw lastError || new Error('Unable to fetch JSON data.');
+            throw new Error('데이터를 불러오지 못했습니다.');
         }
 
-        function populateBrandSelect(filterText) {
-            const select = els.brandSelect;
-            const current = select.value;
-            select.innerHTML = '<option value="">브랜드를 선택해 주세요</option>';
-            const keyword = (filterText || '').trim().toLowerCase();
-            const filtered = keyword
-                ? state.brands.filter(b => `${b.brand_name} ${b.category_main || ''}`.toLowerCase().includes(keyword))
-                : state.brands;
-            filtered.forEach(b => {
+        function populateSelect(filter) {
+            const cur = els.brandSelect.value;
+            els.brandSelect.innerHTML = '<option value="">브랜드를 선택해 주세요</option>';
+            const kw = (filter || '').trim().toLowerCase();
+            const list = kw ? state.brands.filter(b => `${b.brand_name} ${b.category_main||''}`.toLowerCase().includes(kw)) : state.brands;
+            list.forEach(b => {
                 const opt = document.createElement('option');
                 opt.value = b.brand_id;
                 opt.textContent = b.category_main ? `${b.brand_name} · ${b.category_main}` : b.brand_name;
-                select.appendChild(opt);
+                els.brandSelect.appendChild(opt);
             });
-            if (current && filtered.some(b => b.brand_id === current)) select.value = current;
+            if (cur && list.some(b => b.brand_id === cur)) els.brandSelect.value = cur;
         }
 
-        function renderSavedBrandsRow() {
-            const savedIds = JSON.parse(localStorage.getItem('brandhub_saved') || '[]');
-            if (savedIds.length === 0) { els.savedBrandsRow.style.display = 'none'; return; }
-            const savedBrands = savedIds.map(id => state.brands.find(b => b.brand_id === id)).filter(Boolean);
-            if (savedBrands.length === 0) { els.savedBrandsRow.style.display = 'none'; return; }
-            els.savedBrandsRow.style.display = 'flex';
-            els.savedBrandsRow.innerHTML = `<span class="saved-brands-label">저장한 브랜드</span>`;
-            savedBrands.forEach(b => {
+        function renderSavedRow() {
+            const ids = JSON.parse(localStorage.getItem('brandhub_saved') || '[]');
+            const saved = ids.map(id => state.brands.find(b => b.brand_id === id)).filter(Boolean);
+            if (!saved.length) { els.savedRow.style.display = 'none'; return; }
+            els.savedRow.style.display = 'flex';
+            els.savedRow.innerHTML = '<span class="saved-row-label">저장한 브랜드</span>';
+            saved.forEach(b => {
                 const btn = document.createElement('button');
-                btn.className = 'saved-brand-chip';
+                btn.className = 'saved-chip';
                 btn.textContent = b.brand_name;
-                btn.addEventListener('click', () => {
-                    els.brandSelect.value = b.brand_id;
-                    selectBrand(b.brand_id);
-                });
-                els.savedBrandsRow.appendChild(btn);
+                btn.addEventListener('click', () => { els.brandSelect.value = b.brand_id; selectBrand(b.brand_id); });
+                els.savedRow.appendChild(btn);
             });
         }
 
-        function selectBrand(brandId) {
-            const brand = state.brands.find(b => b.brand_id === brandId);
+        function setStatus(text, cls) {
+            els.status.textContent = text;
+            els.status.className = 'chatbot-status' + (cls ? ' ' + cls : '');
+        }
+
+        function selectBrand(id) {
+            const brand = state.brands.find(b => b.brand_id === id);
             state.selectedBrand = brand || null;
             if (brand) {
-                els.selectedBrandDisplay.innerHTML = `<span class="selected-brand-pill">♥ ${brand.brand_name}</span>`;
-                els.chatbotSubtitle.textContent = `${brand.brand_name} 관련 질문을 보내면 AI가 해당 브랜드 데이터를 기반으로 답변합니다.`;
-                els.chatbotStatus.textContent = '준비됨';
-                resetChatMessages();
+                els.selectedPill.innerHTML = `<span class="selected-pill">♥ ${brand.brand_name}</span>`;
+                els.subtitle.textContent = `${brand.brand_name} 관련 질문을 하면 AI가 해당 데이터를 기반으로 답변합니다.`;
+                setStatus('준비됨', 'ready');
+                clearMessages();
+                addMsg('bot', `${brand.brand_name}에 대해 궁금한 점을 물어보세요. 예: 점포 수 추이, 창업 비용, 운영 안정성`);
             } else {
-                els.selectedBrandDisplay.innerHTML = '';
-                els.chatbotSubtitle.textContent = '브랜드를 선택한 뒤 질문을 보내면 AI가 데이터를 기반으로 답변합니다.';
-                els.chatbotStatus.textContent = '준비 중';
+                els.selectedPill.innerHTML = '';
+                els.subtitle.textContent = '위에서 브랜드를 선택하면 해당 데이터를 기반으로 답변합니다.';
+                setStatus('준비 중', '');
             }
         }
 
-        function appendChatMessage(role, text) {
-            const message = document.createElement('div');
-            message.className = `chatbot-message ${role}`;
-            message.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-            els.chatbotMessages.appendChild(message);
-            els.chatbotMessages.scrollTop = els.chatbotMessages.scrollHeight;
-            return message;
+        function addMsg(role, text) {
+            const div = document.createElement('div');
+            div.className = `chat-msg ${role}`;
+            div.innerHTML = `<p style="margin:0">${text.replace(/\n/g, '<br>')}</p>`;
+            els.messages.appendChild(div);
+            els.messages.scrollTop = els.messages.scrollHeight;
+            return div;
         }
-
-        function resetChatMessages() {
-            els.chatbotMessages.innerHTML = '';
-            if (state.selectedBrand) {
-                appendChatMessage('bot', `${state.selectedBrand.brand_name}에 대해 궁금한 점을 물어보세요. 예: 점포 수 추이, 창업 비용, 운영 안정성`);
-            }
-        }
+        function clearMessages() { els.messages.innerHTML = ''; }
 
         async function sendChat(query) {
             if (!state.selectedBrand) {
-                appendChatMessage('bot', '먼저 위에서 브랜드를 선택해 주세요.');
-                els.chatbotMessages.scrollTop = els.chatbotMessages.scrollHeight;
-                return;
+                addMsg('bot', '먼저 위에서 브랜드를 선택해 주세요.'); return;
             }
+            addMsg('user', query);
+            const loading = addMsg('bot', 'AI가 분석 중입니다...');
+            setStatus('분석 중...', 'thinking');
+            els.send.disabled = true;
 
-            appendChatMessage('user', query);
-            const loading = appendChatMessage('bot', 'AI가 분석 중입니다...');
-            els.chatbotStatus.textContent = 'AI 분석 중...';
-
-            const coldStartTimer = setTimeout(() => {
-                loading.innerHTML = '<p>서버가 처음 시작되고 있습니다. 20~30초 정도 기다려 주세요...</p>';
+            const coldTimer = setTimeout(() => {
+                loading.innerHTML = '<p style="margin:0">서버가 처음 시작되고 있습니다. 20~30초 정도 기다려 주세요...</p>';
             }, 12000);
 
             try {
-                const response = await fetch(CHAT_API_URL, {
+                const r = await fetch(CHAT_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query, brand_name: state.selectedBrand.brand_name })
                 });
-                clearTimeout(coldStartTimer);
-                const payload = await response.json();
-                if (!response.ok) throw new Error(payload.error || 'Chat API request failed.');
-                loading.innerHTML = `<p>${String(payload.answer || '답변이 비어 있습니다.').replace(/\n/g, '<br>')}</p>`;
-                els.chatbotStatus.textContent = '응답 완료';
-            } catch (error) {
-                clearTimeout(coldStartTimer);
-                loading.innerHTML = `<p>AI 응답에 실패했습니다. 잠시 후 다시 시도해 주세요.<br><small style="color:var(--text-muted)">${error.message}</small></p>`;
-                els.chatbotStatus.textContent = '연결 실패';
+                clearTimeout(coldTimer);
+                const payload = await r.json();
+                if (!r.ok) throw new Error(payload.error || 'API 오류');
+                loading.innerHTML = `<p style="margin:0">${String(payload.answer || '').replace(/\n/g, '<br>')}</p>`;
+                setStatus('응답 완료', 'ready');
+            } catch (e) {
+                clearTimeout(coldTimer);
+                loading.innerHTML = `<p style="margin:0">AI 응답에 실패했습니다. 잠시 후 다시 시도해 주세요.<br><small style="opacity:0.7">${e.message}</small></p>`;
+                setStatus('연결 실패', 'error');
+            } finally {
+                els.send.disabled = false;
             }
         }
 
+        /* ── Event Listeners ── */
+        els.brandFilter.addEventListener('input', e => populateSelect(e.target.value));
+        els.brandSelect.addEventListener('change', e => selectBrand(e.target.value));
+        els.form.addEventListener('submit', async e => {
+            e.preventDefault();
+            const q = els.input.value.trim();
+            if (!q) return;
+            els.input.value = '';
+            await sendChat(q);
+        });
+        document.querySelectorAll('.prompt-chip').forEach(btn => {
+            btn.addEventListener('click', () => sendChat(btn.dataset.prompt));
+        });
+
+        /* ── Load ── */
         async function loadData() {
             try {
-                const master = await fetchJsonWithFallback(BRAND_MASTER_URLS);
-                state.brands = master.sort((a, b) => (a.brand_name || '').localeCompare(b.brand_name || '', 'ko'));
-                populateBrandSelect('');
-                renderSavedBrandsRow();
-
-                const params = new URLSearchParams(window.location.search);
-                const brandParam = params.get('brand');
-                if (brandParam) {
-                    els.brandSelect.value = brandParam;
-                    selectBrand(brandParam);
-                }
-            } catch (error) {
-                console.error('Failed to load brand data:', error);
-                els.chatbotSubtitle.textContent = '브랜드 데이터를 불러오지 못했습니다.';
+                const master = await fetchJson(BRAND_MASTER_URLS);
+                state.brands = master.sort((a,b) => (a.brand_name||'').localeCompare(b.brand_name||'', 'ko'));
+                populateSelect('');
+                renderSavedRow();
+                const param = new URLSearchParams(location.search).get('brand');
+                if (param) { els.brandSelect.value = param; selectBrand(param); }
+            } catch (e) {
+                els.subtitle.textContent = '브랜드 목록을 불러오지 못했습니다.';
             }
         }
-
-        els.brandFilterInput.addEventListener('input', (e) => {
-            state.filterText = e.target.value;
-            populateBrandSelect(state.filterText);
-        });
-
-        els.brandSelect.addEventListener('change', (e) => selectBrand(e.target.value));
-
-        els.chatbotForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const query = els.chatbotInput.value.trim();
-            if (!query) return;
-            els.chatbotInput.value = '';
-            await sendChat(query);
-        });
-
-        document.querySelectorAll('.prompt-btn').forEach((button) => {
-            button.addEventListener('click', () => sendChat(button.dataset.prompt || ''));
-        });
 
         loadData();
     })();

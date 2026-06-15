@@ -3,147 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>브랜드 탐색기 — Brand Hub</title>
-    <meta name="description" content="프랜차이즈 공개 데이터를 기반으로 브랜드를 탐색하고 창업을 준비하세요.">
+    <title>Brand Hub — 프랜차이즈 탐색 시작</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="templatemo-glass-admin-style.css">
     <style>
-        /* --- Sidebar Nav --- */
-        .sidebar-nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; margin-top: 8px; }
-        .sidebar-nav-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-radius: 10px; font-size: 0.875rem;
-            color: var(--text-secondary); text-decoration: none; transition: all 0.2s;
-        }
-        .sidebar-nav-item:hover { background: var(--glass-border); color: var(--text-primary); }
-        .sidebar-nav-item.active { background: var(--emerald); color: #fff; }
-        .sidebar-nav-item svg { flex-shrink: 0; }
+        html, body { height: 100%; margin: 0; }
 
-        /* --- Onboarding Modal --- */
-        .onboarding-overlay {
-            position: fixed; inset: 0; z-index: 1000;
-            background: rgba(0,0,0,0.45); backdrop-filter: blur(6px);
-            display: flex; align-items: center; justify-content: center; padding: 24px;
+        .wizard-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 24px;
+            position: relative;
+            z-index: 1;
         }
-        .onboarding-overlay.hidden { display: none; }
-        .onboarding-card {
+
+        /* Top-right controls */
+        .wizard-top-bar {
+            position: fixed; top: 20px; right: 24px;
+            display: flex; align-items: center; gap: 10px; z-index: 200;
+        }
+
+        /* Logo */
+        .wizard-logo {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 32px;
+        }
+        .wizard-logo-icon {
+            width: 40px; height: 40px; background: var(--emerald);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 700; font-size: 1.1rem;
+        }
+        .wizard-logo-text { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); }
+
+        /* Step Trail */
+        .step-trail {
+            display: flex; align-items: center; gap: 6px; margin-bottom: 40px;
+        }
+        .step-trail-item {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 0.82rem; color: var(--text-muted);
+        }
+        .step-trail-item.active { color: var(--emerald); font-weight: 600; }
+        .step-trail-num {
+            width: 22px; height: 22px; border-radius: 50%;
+            border: 1.5px solid currentColor; display: flex; align-items: center;
+            justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0;
+        }
+        .step-trail-item.active .step-trail-num {
+            background: var(--emerald); border-color: var(--emerald); color: #fff;
+        }
+        .step-trail-sep { color: var(--glass-border); font-size: 0.85rem; margin: 0 2px; }
+
+        /* Wizard Card */
+        .wizard-card {
             background: var(--glass-bg); border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius); padding: 36px;
-            max-width: 520px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+            border-radius: 20px; padding: 44px 48px;
+            max-width: 580px; width: 100%;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.1);
         }
-        .onboarding-card h2 { font-size: 1.25rem; margin-bottom: 8px; }
-        .onboarding-card > p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 28px; }
-        .onboarding-field { margin-bottom: 24px; }
-        .onboarding-field label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; }
-        .onboarding-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-        .chip {
-            padding: 7px 14px; border-radius: 20px; font-size: 0.85rem;
+        .wizard-kicker {
+            display: block; font-size: 0.75rem; font-weight: 700;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--emerald); margin-bottom: 12px;
+        }
+        .wizard-card h1 {
+            font-size: 1.65rem; font-weight: 700; line-height: 1.3;
+            margin: 0 0 10px;
+        }
+        .wizard-card .wizard-intro {
+            color: var(--text-secondary); font-size: 0.93rem; margin-bottom: 36px;
+        }
+
+        /* Sections */
+        .wizard-section { margin-bottom: 28px; }
+        .wizard-section-title {
+            font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;
+        }
+        .wizard-section-hint {
+            font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;
+        }
+        .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        /* Chips */
+        .wchip {
+            padding: 8px 18px; border-radius: 24px; font-size: 0.875rem;
             border: 1.5px solid var(--glass-border); background: transparent;
-            color: var(--text-primary); cursor: pointer; transition: all 0.2s;
+            color: var(--text-primary); cursor: pointer;
+            transition: all 0.18s; font-family: inherit; line-height: 1.2;
         }
-        .chip:hover { border-color: var(--emerald); color: var(--emerald); }
-        .chip.selected { background: var(--emerald); border-color: var(--emerald); color: #fff; }
-        .onboarding-actions { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
-        .onboarding-skip { background: none; border: none; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; }
-        .onboarding-skip:hover { color: var(--text-secondary); }
-        .onboarding-pref-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            font-size: 0.78rem; color: var(--text-muted); margin-left: 8px;
-        }
-        .onboarding-pref-badge button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.85rem; }
-        .onboarding-pref-badge button:hover { color: var(--danger, #ef4444); }
+        .wchip:hover { border-color: var(--emerald); color: var(--emerald); }
+        .wchip.selected { background: var(--emerald); border-color: var(--emerald); color: #fff; }
+        .wchip.budget.selected { background: #6366f1; border-color: #6366f1; color: #fff; }
+        .wchip.budget:hover:not(.selected) { border-color: #6366f1; color: #6366f1; }
 
-        /* --- Filter Tabs --- */
-        .brand-list-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
-        .tab-btn {
-            padding: 5px 14px; border-radius: 16px; font-size: 0.82rem; font-weight: 500;
-            border: 1.5px solid var(--glass-border); background: transparent;
-            color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+        /* Actions */
+        .wizard-actions { margin-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+        .wizard-cta {
+            width: 100%; padding: 14px 24px; border-radius: 12px;
+            background: var(--emerald); color: #fff;
+            font-size: 1rem; font-weight: 600; border: none; cursor: pointer;
+            font-family: inherit; transition: opacity 0.2s;
         }
-        .tab-btn.active { background: var(--emerald); border-color: var(--emerald); color: #fff; }
-        .tab-btn .tab-count { font-size: 0.75rem; opacity: 0.85; margin-left: 4px; }
+        .wizard-cta:hover { opacity: 0.88; }
+        .wizard-skip {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 0.85rem; cursor: pointer; font-family: inherit;
+            padding: 4px; text-align: center;
+        }
+        .wizard-skip:hover { color: var(--text-secondary); text-decoration: underline; }
 
-        /* --- Save Button --- */
-        .save-brand-btn {
-            background: none; border: 1.5px solid var(--glass-border); border-radius: 20px;
-            padding: 5px 14px; font-size: 0.85rem; cursor: pointer; color: var(--text-secondary);
-            transition: all 0.2s; white-space: nowrap;
-        }
-        .save-brand-btn:hover { border-color: var(--coral); color: var(--coral); }
-        .save-brand-btn.saved { background: var(--coral); border-color: var(--coral); color: #fff; }
-        .brand-item-save {
-            background: none; border: none; cursor: pointer; font-size: 1rem;
-            color: var(--text-muted); padding: 2px 4px; line-height: 1;
-            transition: color 0.15s; flex-shrink: 0;
-        }
-        .brand-item-save:hover { color: var(--coral); }
-        .brand-item-save.saved { color: var(--coral); }
-        .brand-list-item-head { display: flex; justify-content: space-between; align-items: center; }
-        .brand-list-item-head-left { display: flex; align-items: center; gap: 6px; }
+        /* Loading */
+        .chips-loading { font-size: 0.85rem; color: var(--text-muted); padding: 8px 0; }
 
-        /* --- Compare Feature --- */
-        .compare-add-btn {
-            background: none; border: 1.5px solid var(--glass-border); border-radius: 20px;
-            padding: 5px 14px; font-size: 0.85rem; cursor: pointer; color: var(--text-secondary);
-            transition: all 0.2s; white-space: nowrap;
+        @media (max-width: 640px) {
+            .wizard-card { padding: 28px 24px; }
+            .wizard-card h1 { font-size: 1.35rem; }
+            .step-trail-item span:not(.step-trail-num) { display: none; }
         }
-        .compare-add-btn:hover { border-color: #6366f1; color: #6366f1; }
-        .compare-add-btn.in-compare { background: #6366f1; border-color: #6366f1; color: #fff; }
-
-        .compare-tray {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: var(--glass-bg); border: 1px solid var(--glass-border);
-            border-radius: 40px; padding: 10px 20px;
-            display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 500;
-            backdrop-filter: blur(12px); white-space: nowrap;
-        }
-        .compare-tray.hidden { display: none; }
-        .compare-tray-label { font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
-        .compare-brand-chip {
-            display: inline-flex; align-items: center; gap: 6px;
-            border-radius: 16px; padding: 4px 12px; font-size: 0.82rem;
-            background: rgba(99,102,241,0.12); color: #6366f1;
-        }
-        .compare-vs { color: var(--text-muted); font-size: 0.8rem; }
-        .compare-tray-clear { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.85rem; padding: 0 4px; }
-        .compare-tray-clear:hover { color: var(--danger, #ef4444); }
-
-        /* --- Compare Modal --- */
-        .compare-overlay {
-            position: fixed; inset: 0; z-index: 1000;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
-            display: flex; align-items: center; justify-content: center; padding: 24px;
-        }
-        .compare-overlay.hidden { display: none; }
-        .compare-card {
-            background: var(--glass-bg); border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius); padding: 36px;
-            max-width: 740px; width: 100%; max-height: 85vh; overflow-y: auto;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
-        }
-        .compare-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .compare-header h2 { font-size: 1.15rem; }
-        .compare-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.4rem; line-height: 1; }
-        .compare-close:hover { color: var(--danger, #ef4444); }
-        .compare-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .compare-table th, .compare-table td { padding: 10px 14px; border-bottom: 1px solid var(--glass-border); text-align: left; }
-        .compare-table th { color: var(--text-secondary); font-weight: 600; font-size: 0.85rem; }
-        .compare-table td:first-child { color: var(--text-muted); width: 28%; }
-        .compare-chat-actions { display: flex; gap: 12px; margin-top: 24px; }
-        .compare-chat-actions a { flex: 1; text-align: center; text-decoration: none; }
-
-        /* --- Detail panel action row --- */
-        .detail-action-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .detail-chat-link {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: var(--emerald); color: #fff; border-radius: 20px;
-            padding: 6px 16px; font-size: 0.85rem; font-weight: 500;
-            text-decoration: none; transition: opacity 0.2s; white-space: nowrap;
-        }
-        .detail-chat-link:hover { opacity: 0.85; }
     </style>
 </head>
 <body>
@@ -152,218 +132,75 @@
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 
-    <div class="dashboard dashboard-single">
-        <aside class="sidebar sidebar-single" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">B</div>
-                <span class="logo-text">Brand Hub</span>
-            </div>
-
-            <nav class="sidebar-nav">
-                <a class="sidebar-nav-item active" href="index.html">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-                    </svg>
-                    브랜드 탐색
-                </a>
-                <a class="sidebar-nav-item" href="chat.html">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    AI 상담
-                </a>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="single-highlight-card">
-                    <span>Source</span>
-                    <strong>공정위 가맹 공개정보</strong>
-                </div>
-            </div>
-        </aside>
-
-        <main class="main-content main-content-single">
-            <nav class="navbar">
-                <div class="page-header">
-                    <h1 class="page-title">브랜드 탐색기</h1>
-                </div>
-                <div class="navbar-right">
-                    <div class="search-box">
-                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
-                        <input type="search" class="search-input" id="brand-search" placeholder="브랜드명, 회사명, 업종으로 검색">
-                    </div>
-                    <button class="nav-btn" id="theme-toggle" title="Toggle Light/Dark Mode">
-                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="4"/>
-                            <path d="M12 2v2"/><path d="M12 20v2"/>
-                            <path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
-                            <path d="M2 12h2"/><path d="M20 12h2"/>
-                            <path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>
-                        </svg>
-                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                        </svg>
-                    </button>
-                </div>
-            </nav>
-
-            <section class="brand-hub">
-                <section class="glass-card hub-hero">
-                    <div class="hub-hero-copy">
-                        <span class="hub-kicker">Franchise Intelligence</span>
-                        <h2>프랜차이즈 데이터로 창업을 준비하세요</h2>
-                        <p>공정거래위원회 가맹 공개 정보를 기반으로 브랜드별 매출, 점포 수, 창업 비용을 한눈에 확인하고 AI에게 물어보세요.</p>
-                        <div class="hub-hero-actions">
-                            <a class="btn btn-primary hero-cta-btn" href="chat.html">AI 브랜드 상담 →</a>
-                        </div>
-                    </div>
-                    <div class="hub-hero-metrics">
-                        <div class="hub-hero-stat">
-                            <span class="hub-hero-label">브랜드 수</span>
-                            <strong id="summary-brand-count">-</strong>
-                        </div>
-                        <div class="hub-hero-stat">
-                            <span class="hub-hero-label">검색 결과</span>
-                            <strong id="summary-filter-count">-</strong>
-                        </div>
-                        <div class="hub-hero-stat">
-                            <span class="hub-hero-label">기준 연도</span>
-                            <strong id="summary-latest-year">-</strong>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="hub-layout">
-                    <section class="glass-card brand-list-panel">
-                        <div class="panel-heading">
-                            <div>
-                                <h2 class="card-title">Brand Directory</h2>
-                                <p class="card-subtitle">Store count 기준으로 정렬된 브랜드 목록입니다.</p>
-                            </div>
-                        </div>
-                        <div class="brand-list-tabs">
-                            <button class="tab-btn active" id="tab-all">전체</button>
-                            <button class="tab-btn" id="tab-saved">저장한 브랜드<span class="tab-count" id="saved-tab-count"></span></button>
-                        </div>
-                        <div class="brand-list-meta">
-                            <span id="brand-list-status">Loading data...</span>
-                            <span id="pref-badge"></span>
-                        </div>
-                        <div class="brand-list" id="brand-list"></div>
-                    </section>
-
-                    <section class="hub-detail-stack">
-                        <section class="glass-card brand-detail-panel">
-                            <div class="panel-heading">
-                                <div>
-                                    <h2 class="card-title" id="brand-detail-name">브랜드를 선택하세요</h2>
-                                    <p class="card-subtitle" id="brand-detail-company">왼쪽 목록에서 브랜드를 선택하면 상세 정보가 표시됩니다.</p>
-                                </div>
-                                <div class="detail-action-row">
-                                    <button class="compare-add-btn" id="compare-add-btn" type="button">⊕ 비교</button>
-                                    <button class="save-brand-btn" id="detail-save-btn" type="button">♡ 저장</button>
-                                    <a class="detail-chat-link" id="detail-chat-btn" href="chat.html">AI 상담 →</a>
-                                    <span class="brand-category-pill" id="brand-detail-category">-</span>
-                                </div>
-                            </div>
-
-                            <div class="brand-summary-grid">
-                                <div class="brand-summary-card"><span>점포 수</span><strong id="metric-store-count">-</strong></div>
-                                <div class="brand-summary-card"><span>평균 매출</span><strong id="metric-avg-sales">-</strong></div>
-                                <div class="brand-summary-card"><span>성장률</span><strong id="metric-growth-rate">-</strong></div>
-                                <div class="brand-summary-card"><span>폐점률</span><strong id="metric-closure-rate">-</strong></div>
-                                <div class="brand-summary-card"><span>이탈률</span><strong id="metric-churn-rate">-</strong></div>
-                                <div class="brand-summary-card"><span>창업 총비용</span><strong id="metric-startup-cost">-</strong></div>
-                            </div>
-
-                            <div class="brand-detail-body">
-                                <div class="brand-info-block">
-                                    <h3>Brand Profile</h3>
-                                    <dl class="brand-facts">
-                                        <div><dt>브랜드명</dt><dd id="fact-brand-name">-</dd></div>
-                                        <div><dt>회사명</dt><dd id="fact-company-name">-</dd></div>
-                                        <div><dt>업종</dt><dd id="fact-category">-</dd></div>
-                                        <div><dt>가맹 시작일</dt><dd id="fact-start-date">-</dd></div>
-                                        <div><dt>매장 유형</dt><dd id="fact-store-type">-</dd></div>
-                                        <div><dt>기준 연도</dt><dd id="fact-year">-</dd></div>
-                                    </dl>
-                                </div>
-
-                                <div class="brand-info-block">
-                                    <h3>Yearly Trend</h3>
-                                    <div class="brand-trend-table-wrapper">
-                                        <table class="brand-trend-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>연도</th><th>점포 수</th><th>신규</th><th>폐점</th><th>매출</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="brand-trend-body"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </section>
-                </section>
-            </section>
-        </main>
+    <div class="wizard-top-bar">
+        <button class="nav-btn" id="theme-toggle" title="Toggle Light/Dark Mode">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2"/><path d="M12 20v2"/>
+                <path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
+                <path d="M2 12h2"/><path d="M20 12h2"/>
+                <path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        </button>
     </div>
 
-    <!-- Onboarding Modal -->
-    <div class="onboarding-overlay hidden" id="onboarding-modal">
-        <div class="onboarding-card">
-            <h2>맞춤 브랜드를 추천해 드릴게요</h2>
-            <p>관심 업종과 예산을 선택하면 딱 맞는 프랜차이즈 브랜드를 보여드립니다.</p>
-            <div class="onboarding-field">
-                <label>관심 업종 (복수 선택 가능)</label>
-                <div class="onboarding-chips" id="onboarding-category-chips"></div>
+    <div class="wizard-page">
+        <div class="wizard-logo">
+            <div class="wizard-logo-icon">B</div>
+            <span class="wizard-logo-text">Brand Hub</span>
+        </div>
+
+        <div class="step-trail">
+            <div class="step-trail-item active">
+                <span class="step-trail-num">1</span>
+                <span>관심 설정</span>
             </div>
-            <div class="onboarding-field">
-                <label>창업 예산</label>
-                <div class="onboarding-chips" id="onboarding-budget-chips">
-                    <button class="chip" data-budget-min="0" data-budget-max="50000000">5천만원 미만</button>
-                    <button class="chip" data-budget-min="50000000" data-budget-max="100000000">5천만~1억</button>
-                    <button class="chip" data-budget-min="100000000" data-budget-max="300000000">1억~3억</button>
-                    <button class="chip" data-budget-min="300000000" data-budget-max="500000000">3억~5억</button>
-                    <button class="chip" data-budget-min="500000000" data-budget-max="999999999999">5억 이상</button>
+            <span class="step-trail-sep">——</span>
+            <div class="step-trail-item">
+                <span class="step-trail-num">2</span>
+                <span>브랜드 탐색</span>
+            </div>
+            <span class="step-trail-sep">——</span>
+            <div class="step-trail-item">
+                <span class="step-trail-num">3</span>
+                <span>AI 상담</span>
+            </div>
+        </div>
+
+        <div class="wizard-card">
+            <span class="wizard-kicker">Step 1 · 관심 설정</span>
+            <h1>어떤 프랜차이즈를<br>찾고 계신가요?</h1>
+            <p class="wizard-intro">관심 업종과 예산을 고르면 딱 맞는 브랜드만 추려드립니다.<br>건너뛰면 전체 브랜드를 볼 수 있습니다.</p>
+
+            <div class="wizard-section">
+                <div class="wizard-section-title">관심 업종</div>
+                <div class="wizard-section-hint">복수 선택 가능 · 선택 안 하면 전체 업종 표시</div>
+                <div class="chip-grid" id="category-chips">
+                    <span class="chips-loading">업종 목록 불러오는 중...</span>
                 </div>
             </div>
-            <div class="onboarding-actions">
-                <button class="btn btn-primary" id="onboarding-submit" style="width:auto;">맞춤 브랜드 보기</button>
-                <button class="onboarding-skip" id="onboarding-skip">건너뛰기</button>
+
+            <div class="wizard-section">
+                <div class="wizard-section-title">창업 예산</div>
+                <div class="wizard-section-hint">하나 선택 · 선택 안 하면 예산 제한 없음</div>
+                <div class="chip-grid" id="budget-chips">
+                    <button class="wchip budget" data-min="0" data-max="50000000">5천만원 미만</button>
+                    <button class="wchip budget" data-min="50000000" data-max="100000000">5천만 ~ 1억</button>
+                    <button class="wchip budget" data-min="100000000" data-max="300000000">1억 ~ 3억</button>
+                    <button class="wchip budget" data-min="300000000" data-max="500000000">3억 ~ 5억</button>
+                    <button class="wchip budget" data-min="500000000" data-max="999999999999">5억 이상</button>
+                </div>
+            </div>
+
+            <div class="wizard-actions">
+                <button class="wizard-cta" id="start-btn">추천 브랜드 보기 →</button>
+                <button class="wizard-skip" id="skip-btn">필터 없이 전체 브랜드 보기</button>
             </div>
         </div>
     </div>
-
-    <!-- Compare Tray (fixed bottom) -->
-    <div class="compare-tray hidden" id="compare-tray">
-        <span class="compare-tray-label">비교</span>
-        <div id="compare-tray-brands"></div>
-        <button class="btn btn-primary" id="compare-btn" style="width:auto;font-size:0.82rem;padding:6px 16px;" disabled>비교하기</button>
-        <button class="compare-tray-clear" id="compare-clear-btn" title="비교 초기화">✕</button>
-    </div>
-
-    <!-- Compare Modal -->
-    <div class="compare-overlay hidden" id="compare-modal">
-        <div class="compare-card">
-            <div class="compare-header">
-                <h2>브랜드 비교</h2>
-                <button class="compare-close" id="compare-close">✕</button>
-            </div>
-            <div id="compare-content"></div>
-        </div>
-    </div>
-
-    <button class="mobile-menu-toggle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-    </button>
 
     <script src="app-config.js"></script>
     <script src="templatemo-glass-admin-script.js"></script>
@@ -375,490 +212,64 @@
             '/db_chatbot/build_api_selected/brand_master.json',
             `${window.location.origin}/db_chatbot/build_api_selected/brand_master.json`
         ];
-        const BRAND_YEAR_STATS_URLS = [
-            './data/brand_year_stats.json',
-            '../db_chatbot/build_api_selected/brand_year_stats.json',
-            '/db_chatbot/build_api_selected/brand_year_stats.json',
-            `${window.location.origin}/db_chatbot/build_api_selected/brand_year_stats.json`
-        ];
-        const BRAND_COSTS_URLS = [
-            './data/brand_store_type_costs.json',
-            '../db_chatbot/build_api_selected/brand_store_type_costs.json',
-            '/db_chatbot/build_api_selected/brand_store_type_costs.json',
-            `${window.location.origin}/db_chatbot/build_api_selected/brand_store_type_costs.json`
-        ];
-        const SHEET_SCRIPT_URL = (window.APP_CONFIG && window.APP_CONFIG.sheetScriptUrl) ? window.APP_CONFIG.sheetScriptUrl : '';
-        const VISITORS_TABLE = (window.APP_CONFIG && window.APP_CONFIG.visitorsTable) ? window.APP_CONFIG.visitorsTable : 'visitors';
-
-        const state = {
-            brands: [],
-            filteredBrands: [],
-            selectedBrand: null,
-            searchText: '',
-            visitorLogSent: false,
-            visitorIp: 'unknown',
-            savedBrands: new Set(JSON.parse(localStorage.getItem('brandhub_saved') || '[]')),
-            showSaved: false,
-            userPrefs: JSON.parse(localStorage.getItem('brandhub_prefs') || 'null'),
-            compareIds: []
-        };
-
-        const els = {
-            search: document.getElementById('brand-search'),
-            list: document.getElementById('brand-list'),
-            listStatus: document.getElementById('brand-list-status'),
-            summaryBrandCount: document.getElementById('summary-brand-count'),
-            summaryFilterCount: document.getElementById('summary-filter-count'),
-            summaryLatestYear: document.getElementById('summary-latest-year'),
-            detailName: document.getElementById('brand-detail-name'),
-            detailCompany: document.getElementById('brand-detail-company'),
-            detailCategory: document.getElementById('brand-detail-category'),
-            metricStoreCount: document.getElementById('metric-store-count'),
-            metricAvgSales: document.getElementById('metric-avg-sales'),
-            metricGrowthRate: document.getElementById('metric-growth-rate'),
-            metricClosureRate: document.getElementById('metric-closure-rate'),
-            metricChurnRate: document.getElementById('metric-churn-rate'),
-            metricStartupCost: document.getElementById('metric-startup-cost'),
-            factBrandName: document.getElementById('fact-brand-name'),
-            factCompanyName: document.getElementById('fact-company-name'),
-            factCategory: document.getElementById('fact-category'),
-            factStartDate: document.getElementById('fact-start-date'),
-            factStoreType: document.getElementById('fact-store-type'),
-            factYear: document.getElementById('fact-year'),
-            trendBody: document.getElementById('brand-trend-body'),
-            detailSaveBtn: document.getElementById('detail-save-btn'),
-            savedTabCount: document.getElementById('saved-tab-count'),
-            prefBadge: document.getElementById('pref-badge')
-        };
-
-        /* --- Visitor Logging --- */
-        function getCookieValue(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return '';
-        }
-        function setCookieValue(name, value, days) {
-            let expires = '';
-            if (days) {
-                const date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = `; expires=${date.toUTCString()}`;
-            }
-            document.cookie = `${name}=${value || ''}${expires}; path=/`;
-        }
-        function getVisitorId() {
-            const cookieName = 'brandhub_uv';
-            const existingId = getCookieValue(cookieName);
-            if (existingId) return existingId;
-            const newId = Math.random().toString(36).slice(2, 10);
-            setCookieValue(cookieName, newId, 365);
-            return newId;
-        }
-        function requestJsonp(url) {
-            return new Promise((resolve, reject) => {
-                const cb = `sheetCallback_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-                const script = document.createElement('script');
-                const sep = url.includes('?') ? '&' : '?';
-                const cleanup = () => { delete window[cb]; if (script.parentNode) script.parentNode.removeChild(script); };
-                window[cb] = (data) => { cleanup(); resolve(data); };
-                script.src = `${url}${sep}callback=${cb}`;
-                script.onerror = () => { cleanup(); reject(new Error('JSONP failed')); };
-                document.body.appendChild(script);
-            });
-        }
-        function getTimeStamp() {
-            const d = new Date();
-            const p = (v) => String(v).padStart(2, '0');
-            return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-        }
-        function getUtmValue() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('utm') || params.get('utm_source') || params.get('source') || 'direct';
-        }
-        function getDeviceType() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
-        }
-        async function sendSheetInsert(tableName, payload) {
-            if (!SHEET_SCRIPT_URL) throw new Error('Missing sheetScriptUrl');
-            const url = `${SHEET_SCRIPT_URL}?action=insert&table=${encodeURIComponent(tableName)}&data=${encodeURIComponent(payload)}`;
-            const res = await requestJsonp(url);
-            if (!res || !res.success) throw new Error(res?.data?.error || 'Insert failed');
-            return res;
-        }
-        async function fetchVisitorIp() {
-            try { const r = await fetch('https://api.ipify.org?format=json'); const d = await r.json(); return d.ip || 'unknown'; }
-            catch { return 'unknown'; }
-        }
-        async function logVisitorAccess() {
-            if (!SHEET_SCRIPT_URL || state.visitorLogSent) return;
-            state.visitorLogSent = true;
-            state.visitorIp = await fetchVisitorIp();
-            try {
-                await sendSheetInsert(VISITORS_TABLE, JSON.stringify({
-                    id: getVisitorId(), landingUrl: window.location.href,
-                    ip: state.visitorIp, referer: document.referrer || 'direct',
-                    time_stamp: getTimeStamp(), utm: getUtmValue(), device: getDeviceType()
-                }));
-            } catch (e) { console.error('Visitor log failed:', e); }
-        }
-
-        /* --- Format Helpers --- */
-        function formatNumber(value) {
-            if (value === null || value === undefined || Number.isNaN(value)) return '-';
-            return Number(value).toLocaleString('ko-KR');
-        }
-        function formatKRW(value) {
-            if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
-            return `${Number(value).toLocaleString('ko-KR')} KRW`;
-        }
-        function formatPercent(value) {
-            if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
-            return `${(Number(value) * 100).toFixed(1)}%`;
-        }
-        function formatDate(value) {
-            if (!value) return '-';
-            const text = String(value);
-            if (text.length !== 8) return text;
-            return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
-        }
-
-        /* --- Data Building --- */
-        function buildBrandDataset(master, yearStats, costRows) {
-            const statsByBrand = new Map();
-            const trendByBrand = new Map();
-            yearStats.forEach((row) => {
-                const id = row.brand_id;
-                if (!trendByBrand.has(id)) trendByBrand.set(id, []);
-                trendByBrand.get(id).push(row);
-                const cur = statsByBrand.get(id);
-                if (!cur || row.year > cur.year) statsByBrand.set(id, row);
-            });
-            const costTotals = new Map();
-            costRows.forEach((row) => {
-                const key = `${row.brand_id}:${row.year}:${row.store_type || 'Unknown'}`;
-                costTotals.set(key, (costTotals.get(key) || 0) + (Number(row.cost_amount_krw) || 0));
-            });
-            return master.map((brand) => {
-                const latestStats = statsByBrand.get(brand.brand_id) || null;
-                const trends = (trendByBrand.get(brand.brand_id) || []).sort((a, b) => b.year - a.year);
-                let startupCost = null, storeType = '-';
-                if (latestStats) {
-                    const costs = Array.from(costTotals.entries())
-                        .filter(([k]) => k.startsWith(`${brand.brand_id}:${latestStats.year}:`))
-                        .map(([k, total]) => ({ total, storeType: k.split(':')[2] }))
-                        .sort((a, b) => b.total - a.total);
-                    if (costs.length > 0) { startupCost = costs[0].total; storeType = costs[0].storeType; }
-                }
-                return {
-                    brandId: brand.brand_id, brandName: brand.brand_name, companyName: brand.company_name,
-                    categoryMain: brand.category_main, categorySub: brand.category_sub,
-                    franchiseStartDate: brand.franchise_start_date, latestStats, startupCost, storeType, trends
-                };
-            }).sort((a, b) => (b.latestStats?.store_count || 0) - (a.latestStats?.store_count || 0));
-        }
 
         async function fetchJsonWithFallback(urls) {
-            let lastError = null;
             for (const url of urls) {
                 try {
                     const r = await fetch(url);
-                    if (!r.ok) { lastError = new Error(`${r.status} at ${url}`); continue; }
-                    return await r.json();
-                } catch (e) { lastError = e; }
+                    if (r.ok) return await r.json();
+                } catch (_) {}
             }
-            throw lastError || new Error('Unable to fetch JSON data.');
+            throw new Error('브랜드 데이터를 불러오지 못했습니다.');
         }
 
-        /* --- Render --- */
-        function renderBrandList() {
-            els.list.innerHTML = '';
-            const fragment = document.createDocumentFragment();
-            const displayList = state.showSaved
-                ? state.filteredBrands.filter((b) => state.savedBrands.has(b.brandId))
-                : state.filteredBrands;
-
-            displayList.slice(0, 120).forEach((brand) => {
-                const saved = state.savedBrands.has(brand.brandId);
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = `brand-list-item${state.selectedBrand && state.selectedBrand.brandId === brand.brandId ? ' active' : ''}`;
-                button.innerHTML = `
-                    <div class="brand-list-item-head">
-                        <div class="brand-list-item-head-left"><strong>${brand.brandName}</strong></div>
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <span>${brand.latestStats ? brand.latestStats.year : '-'}</span>
-                            <button class="brand-item-save ${saved ? 'saved' : ''}" data-brand-id="${brand.brandId}" title="${saved ? '저장 취소' : '브랜드 저장'}">${saved ? '♥' : '♡'}</button>
-                        </div>
-                    </div>
-                    <p>${brand.companyName || '회사 정보 없음'}</p>
-                    <div class="brand-list-item-meta">
-                        <span>${brand.categorySub || brand.categoryMain || '-'}</span>
-                        <span>점포 ${formatNumber(brand.latestStats?.store_count)}</span>
-                    </div>
-                `;
-                button.addEventListener('click', (e) => {
-                    if (e.target.closest('.brand-item-save')) return;
-                    state.selectedBrand = brand;
-                    renderBrandList();
-                    renderBrandDetail();
-                });
-                button.querySelector('.brand-item-save').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    toggleSaveBrand(brand.brandId);
-                });
-                fragment.appendChild(button);
-            });
-
-            els.list.appendChild(fragment);
-            const savedCount = state.savedBrands.size;
-            els.savedTabCount.textContent = savedCount ? ` (${savedCount})` : '';
-            els.listStatus.textContent = state.showSaved
-                ? `저장한 브랜드 ${formatNumber(displayList.length)}개`
-                : `${formatNumber(displayList.length)}개 브랜드`;
-            els.summaryBrandCount.textContent = formatNumber(state.brands.length);
-            els.summaryFilterCount.textContent = formatNumber(displayList.length);
-            els.summaryLatestYear.textContent = formatNumber(state.selectedBrand?.latestStats?.year || state.brands[0]?.latestStats?.year);
-        }
-
-        function renderBrandDetail() {
-            const brand = state.selectedBrand;
-            if (!brand) return;
-            const stats = brand.latestStats || {};
-            els.detailName.textContent = brand.brandName;
-            els.detailCompany.textContent = brand.companyName || '회사 정보 없음';
-            els.detailCategory.textContent = [brand.categoryMain, brand.categorySub].filter(Boolean).join(' / ') || '분류 없음';
-            els.metricStoreCount.textContent = formatNumber(stats.store_count);
-            els.metricAvgSales.textContent = formatKRW(stats.avg_sales_krw);
-            els.metricGrowthRate.textContent = formatPercent(stats.store_growth_rate);
-            els.metricClosureRate.textContent = formatPercent(stats.closure_rate);
-            els.metricChurnRate.textContent = formatPercent(stats.churn_rate);
-            els.metricStartupCost.textContent = formatKRW(brand.startupCost);
-            els.factBrandName.textContent = brand.brandName;
-            els.factCompanyName.textContent = brand.companyName || '-';
-            els.factCategory.textContent = [brand.categoryMain, brand.categorySub].filter(Boolean).join(' / ') || '-';
-            els.factStartDate.textContent = formatDate(brand.franchiseStartDate);
-            els.factStoreType.textContent = brand.storeType || '-';
-            els.factYear.textContent = stats.year || '-';
-            els.trendBody.innerHTML = brand.trends.slice(0, 6).map((row) => `
-                <tr>
-                    <td>${row.year}</td><td>${formatNumber(row.store_count)}</td>
-                    <td>${formatNumber(row.new_stores)}</td><td>${formatNumber(row.closed_stores)}</td>
-                    <td>${formatKRW(row.avg_sales_krw)}</td>
-                </tr>
-            `).join('');
-            updateDetailSaveButton();
-            updateCompareAddBtn();
-            const chatBtn = document.getElementById('detail-chat-btn');
-            if (chatBtn) chatBtn.href = `chat.html?brand=${encodeURIComponent(brand.brandId)}`;
-        }
-
-        function applyFilter() {
-            const keyword = state.searchText.trim().toLowerCase();
-            let base = state.brands;
-            if (state.userPrefs) {
-                const { categories, budgetMin, budgetMax } = state.userPrefs;
-                base = base.filter((brand) => {
-                    const catMatch = !categories.length || categories.includes(brand.categoryMain);
-                    const cost = brand.startupCost;
-                    const budgetMatch = budgetMin === null || cost === null || (cost >= budgetMin && cost <= budgetMax);
-                    return catMatch && budgetMatch;
-                });
-            }
-            if (keyword) {
-                base = base.filter((brand) => {
-                    const hay = [brand.brandName, brand.companyName, brand.categoryMain, brand.categorySub].join(' ').toLowerCase();
-                    return hay.includes(keyword);
-                });
-            }
-            state.filteredBrands = base;
-            if (!state.selectedBrand || !state.filteredBrands.some((b) => b.brandId === state.selectedBrand.brandId)) {
-                state.selectedBrand = state.filteredBrands[0] || state.brands[0] || null;
-            }
-            renderBrandList();
-            renderBrandDetail();
-        }
-
-        /* --- Save --- */
-        function toggleSaveBrand(brandId) {
-            if (state.savedBrands.has(brandId)) state.savedBrands.delete(brandId);
-            else state.savedBrands.add(brandId);
-            localStorage.setItem('brandhub_saved', JSON.stringify([...state.savedBrands]));
-            renderBrandList();
-            updateDetailSaveButton();
-        }
-        function updateDetailSaveButton() {
-            if (!els.detailSaveBtn || !state.selectedBrand) return;
-            const saved = state.savedBrands.has(state.selectedBrand.brandId);
-            els.detailSaveBtn.textContent = saved ? '♥ 저장됨' : '♡ 저장';
-            els.detailSaveBtn.classList.toggle('saved', saved);
-        }
-
-        /* --- Compare --- */
-        function toggleCompare(brandId) {
-            const idx = state.compareIds.indexOf(brandId);
-            if (idx >= 0) state.compareIds.splice(idx, 1);
-            else if (state.compareIds.length < 2) state.compareIds.push(brandId);
-            updateCompareTray();
-            updateCompareAddBtn();
-        }
-        function updateCompareAddBtn() {
-            const btn = document.getElementById('compare-add-btn');
-            if (!btn || !state.selectedBrand) return;
-            const inCompare = state.compareIds.includes(state.selectedBrand.brandId);
-            btn.textContent = inCompare ? '⊖ 비교 중' : '⊕ 비교';
-            btn.classList.toggle('in-compare', inCompare);
-        }
-        function updateCompareTray() {
-            const tray = document.getElementById('compare-tray');
-            const trayBrands = document.getElementById('compare-tray-brands');
-            const compareBtn = document.getElementById('compare-btn');
-            if (!tray) return;
-            if (state.compareIds.length === 0) { tray.classList.add('hidden'); return; }
-            tray.classList.remove('hidden');
-            const brands = state.compareIds.map(id => state.brands.find(b => b.brandId === id)).filter(Boolean);
-            trayBrands.innerHTML = brands.map(b => `<span class="compare-brand-chip">${b.brandName}</span>`).join('<span class="compare-vs"> vs </span>');
-            if (compareBtn) compareBtn.disabled = state.compareIds.length < 2;
-        }
-        function renderCompareModal() {
-            const brands = state.compareIds.map(id => state.brands.find(b => b.brandId === id)).filter(Boolean);
-            if (brands.length < 2) return;
-            const [a, b] = brands;
-            const rows = [
-                ['업종', [a.categoryMain, a.categorySub].filter(Boolean).join(' / '), [b.categoryMain, b.categorySub].filter(Boolean).join(' / ')],
-                ['점포 수', formatNumber(a.latestStats?.store_count), formatNumber(b.latestStats?.store_count)],
-                ['평균 매출', formatKRW(a.latestStats?.avg_sales_krw), formatKRW(b.latestStats?.avg_sales_krw)],
-                ['성장률', formatPercent(a.latestStats?.store_growth_rate), formatPercent(b.latestStats?.store_growth_rate)],
-                ['폐점률', formatPercent(a.latestStats?.closure_rate), formatPercent(b.latestStats?.closure_rate)],
-                ['이탈률', formatPercent(a.latestStats?.churn_rate), formatPercent(b.latestStats?.churn_rate)],
-                ['창업 총비용', formatKRW(a.startupCost), formatKRW(b.startupCost)],
-                ['기준 연도', String(a.latestStats?.year || '-'), String(b.latestStats?.year || '-')]
-            ];
-            document.getElementById('compare-content').innerHTML = `
-                <table class="compare-table">
-                    <thead><tr><th>지표</th><th>${a.brandName}</th><th>${b.brandName}</th></tr></thead>
-                    <tbody>${rows.map(([label, va, vb]) => `<tr><td>${label}</td><td>${va}</td><td>${vb}</td></tr>`).join('')}</tbody>
-                </table>
-                <div class="compare-chat-actions">
-                    <a class="btn btn-primary" href="chat.html?brand=${encodeURIComponent(a.brandId)}">${a.brandName} AI 상담</a>
-                    <a class="btn btn-primary" href="chat.html?brand=${encodeURIComponent(b.brandId)}">${b.brandName} AI 상담</a>
-                </div>
-            `;
-            document.getElementById('compare-modal').classList.remove('hidden');
-        }
-
-        /* --- Onboarding --- */
-        function showOnboardingModal() {
-            const modal = document.getElementById('onboarding-modal');
-            if (!modal) return;
-            const categories = [...new Set(state.brands.map((b) => b.categoryMain).filter(Boolean))].sort();
-            const chipContainer = document.getElementById('onboarding-category-chips');
-            chipContainer.innerHTML = '';
-            categories.forEach((cat) => {
-                const btn = document.createElement('button');
-                btn.className = 'chip'; btn.textContent = cat;
-                btn.addEventListener('click', () => btn.classList.toggle('selected'));
-                chipContainer.appendChild(btn);
-            });
-            document.querySelectorAll('#onboarding-budget-chips .chip').forEach((btn) => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('#onboarding-budget-chips .chip').forEach((b) => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                });
-            });
-            document.getElementById('onboarding-submit').onclick = () => {
-                const selectedCats = [...chipContainer.querySelectorAll('.chip.selected')].map((b) => b.textContent);
-                const budgetBtn = document.querySelector('#onboarding-budget-chips .chip.selected');
-                const prefs = {
-                    categories: selectedCats,
-                    budgetMin: budgetBtn ? Number(budgetBtn.dataset.budgetMin) : null,
-                    budgetMax: budgetBtn ? Number(budgetBtn.dataset.budgetMax) : null,
-                    label: [selectedCats.length ? selectedCats.join(', ') : null, budgetBtn ? budgetBtn.textContent : null].filter(Boolean).join(' · ')
-                };
-                state.userPrefs = prefs;
-                localStorage.setItem('brandhub_prefs', JSON.stringify(prefs));
-                localStorage.setItem('brandhub_onboarded', '1');
-                modal.classList.add('hidden');
-                applyFilter();
-                updatePrefBadge();
-            };
-            document.getElementById('onboarding-skip').onclick = () => {
-                localStorage.setItem('brandhub_onboarded', '1');
-                modal.classList.add('hidden');
-            };
-            modal.classList.remove('hidden');
-        }
-
-        function updatePrefBadge() {
-            if (!els.prefBadge) return;
-            if (!state.userPrefs || !state.userPrefs.label) { els.prefBadge.innerHTML = ''; return; }
-            els.prefBadge.innerHTML = `
-                <span class="onboarding-pref-badge">
-                    · ${state.userPrefs.label}
-                    <button title="필터 초기화" id="clear-pref-btn">✕</button>
-                </span>`;
-            document.getElementById('clear-pref-btn').addEventListener('click', () => {
-                state.userPrefs = null;
-                localStorage.removeItem('brandhub_prefs');
-                localStorage.removeItem('brandhub_onboarded');
-                els.prefBadge.innerHTML = '';
-                applyFilter();
-            });
-        }
-
-        /* --- Load --- */
-        async function loadData() {
+        async function loadCategories() {
             try {
-                const [master, yearStats, costs] = await Promise.all([
-                    fetchJsonWithFallback(BRAND_MASTER_URLS),
-                    fetchJsonWithFallback(BRAND_YEAR_STATS_URLS),
-                    fetchJsonWithFallback(BRAND_COSTS_URLS)
-                ]);
-                state.brands = buildBrandDataset(master, yearStats, costs);
-                state.filteredBrands = state.brands;
-                state.selectedBrand = state.brands[0] || null;
-                updatePrefBadge();
-                applyFilter();
-                if (!localStorage.getItem('brandhub_onboarded')) showOnboardingModal();
-            } catch (error) {
-                els.listStatus.textContent = 'Failed to load brand data.';
-                els.list.innerHTML = `<div class="brand-list-empty">Brand data could not be loaded.<br>${error.message}<br><br>Local dev: use Live Server from workspace root, or populate <code>./data/</code>.</div>`;
+                const master = await fetchJsonWithFallback(BRAND_MASTER_URLS);
+                const cats = [...new Set(master.map(b => b.category_main).filter(Boolean))].sort();
+                const container = document.getElementById('category-chips');
+                container.innerHTML = '';
+                cats.forEach(cat => {
+                    const btn = document.createElement('button');
+                    btn.className = 'wchip';
+                    btn.textContent = cat;
+                    btn.addEventListener('click', () => btn.classList.toggle('selected'));
+                    container.appendChild(btn);
+                });
+            } catch (e) {
+                document.getElementById('category-chips').innerHTML =
+                    '<span class="chips-loading">업종 목록을 불러오지 못했습니다. 전체 보기를 이용해 주세요.</span>';
             }
         }
 
-        /* --- Event Listeners --- */
-        els.search.addEventListener('input', (e) => { state.searchText = e.target.value; applyFilter(); });
-
-        document.getElementById('tab-all').addEventListener('click', () => {
-            state.showSaved = false;
-            document.getElementById('tab-all').classList.add('active');
-            document.getElementById('tab-saved').classList.remove('active');
-            renderBrandList();
-        });
-        document.getElementById('tab-saved').addEventListener('click', () => {
-            state.showSaved = true;
-            document.getElementById('tab-saved').classList.add('active');
-            document.getElementById('tab-all').classList.remove('active');
-            renderBrandList();
+        document.querySelectorAll('#budget-chips .wchip').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#budget-chips .wchip').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            });
         });
 
-        els.detailSaveBtn.addEventListener('click', () => { if (state.selectedBrand) toggleSaveBrand(state.selectedBrand.brandId); });
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const cats = [...document.querySelectorAll('#category-chips .wchip.selected')].map(b => b.textContent.trim());
+            const budgetBtn = document.querySelector('#budget-chips .wchip.selected');
+            const prefs = {
+                categories: cats,
+                budgetMin: budgetBtn ? Number(budgetBtn.dataset.min) : null,
+                budgetMax: budgetBtn ? Number(budgetBtn.dataset.max) : null,
+                label: [cats.length ? cats.join(', ') : null, budgetBtn ? budgetBtn.textContent.trim() : null].filter(Boolean).join(' · ')
+            };
+            localStorage.setItem('brandhub_prefs', JSON.stringify(prefs));
+            localStorage.setItem('brandhub_onboarded', '1');
+            window.location.href = 'brands.html';
+        });
 
-        document.getElementById('compare-add-btn').addEventListener('click', () => {
-            if (state.selectedBrand) toggleCompare(state.selectedBrand.brandId);
-        });
-        document.getElementById('compare-btn').addEventListener('click', renderCompareModal);
-        document.getElementById('compare-clear-btn').addEventListener('click', () => {
-            state.compareIds = [];
-            updateCompareTray();
-            updateCompareAddBtn();
-        });
-        document.getElementById('compare-close').addEventListener('click', () => {
-            document.getElementById('compare-modal').classList.add('hidden');
+        document.getElementById('skip-btn').addEventListener('click', () => {
+            localStorage.removeItem('brandhub_prefs');
+            localStorage.setItem('brandhub_onboarded', '1');
+            window.location.href = 'brands.html';
         });
 
-        logVisitorAccess();
-        loadData();
+        loadCategories();
     })();
     </script>
 </body>
