@@ -225,6 +225,66 @@
             display: inline-flex; align-items: center; gap: 6px;
         }
         .action-btn-chat:hover { opacity: 0.85; }
+        .action-btn-report {
+            padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+            border: none; cursor: pointer; font-family: inherit;
+            transition: opacity 0.18s; white-space: nowrap;
+        }
+        .action-btn-report:hover { opacity: 0.85; }
+
+        /* ── Report Request Modal ── */
+        .report-overlay {
+            position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,0.52); backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center; padding: 24px;
+        }
+        .report-overlay.hidden { display: none; }
+        .report-card {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 18px; padding: 32px; max-width: 460px; width: 100%;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+        }
+        .report-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .report-card-header h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 5px; }
+        .report-card-header p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+        .report-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+        .report-close:hover { color: var(--danger, #ef4444); }
+
+        .report-features {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px;
+        }
+        .report-feature {
+            background: rgba(99,102,241,0.07); border: 1px solid rgba(99,102,241,0.18);
+            border-radius: 10px; padding: 9px 12px; font-size: 0.8rem; color: var(--text-secondary);
+        }
+
+        .report-form-group { margin-bottom: 14px; }
+        .report-form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .report-input, .report-textarea {
+            width: 100%; padding: 9px 12px; border-radius: 10px; box-sizing: border-box;
+            border: 1.5px solid var(--glass-border); background: transparent;
+            color: var(--text-primary); font-size: 0.88rem; font-family: inherit;
+            outline: none; transition: border-color 0.18s;
+        }
+        .report-input:focus, .report-textarea:focus { border-color: #6366f1; }
+        .report-input[readonly] { color: var(--text-secondary); cursor: default; }
+        .report-textarea { resize: none; }
+        .report-submit-btn {
+            width: 100%; padding: 12px; border-radius: 12px; margin-top: 6px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+            border: none; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+            font-family: inherit; transition: opacity 0.18s;
+        }
+        .report-submit-btn:hover { opacity: 0.88; }
+        .report-submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .report-form-status { font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; text-align: center; min-height: 18px; }
+
+        .report-success { text-align: center; padding: 16px 0; }
+        .report-success-icon { font-size: 2.4rem; margin-bottom: 12px; }
+        .report-success h3 { font-size: 1.05rem; font-weight: 700; margin: 0 0 10px; }
+        .report-success p { font-size: 0.88rem; color: var(--text-secondary); margin: 0 0 6px; line-height: 1.6; }
+        .report-success-note { font-size: 0.78rem; color: var(--text-muted); margin-top: 12px; }
 
         /* Stats Grid */
         .brand-stats-grid {
@@ -522,6 +582,7 @@
                         <div class="detail-actions">
                             <button class="action-btn" id="d-save-btn" type="button">♡ 저장</button>
                             <button class="action-btn compare" id="d-compare-btn" type="button">⊕ 비교</button>
+                            <button class="action-btn-report" id="d-report-btn" type="button">📊 AI 리포트 신청</button>
                             <a class="action-btn-chat" id="d-chat-btn" href="chat.html">AI에게 물어보기 →</a>
                         </div>
                     </div>
@@ -563,6 +624,55 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Request Modal -->
+    <div class="report-overlay hidden" id="report-modal">
+        <div class="report-card">
+            <div class="report-card-header">
+                <div>
+                    <h2>AI 브랜드 분석 리포트</h2>
+                    <p id="report-subtitle">선택한 브랜드의 리포트를 신청합니다.</p>
+                </div>
+                <button class="report-close" id="report-close">✕</button>
+            </div>
+
+            <!-- What's included -->
+            <div class="report-features">
+                <div class="report-feature">📊 매출·점포 수 추이 분석</div>
+                <div class="report-feature">💰 창업 비용 상세 분해</div>
+                <div class="report-feature">⚠️ 폐점률·이탈률 리스크</div>
+                <div class="report-feature">✅ AI 창업 적합도 진단</div>
+            </div>
+
+            <!-- Form -->
+            <div id="report-form-wrap">
+                <form id="report-form">
+                    <div class="report-form-group">
+                        <label for="report-email">이메일 *</label>
+                        <input type="email" id="report-email" class="report-input" placeholder="리포트를 받을 이메일" required>
+                    </div>
+                    <div class="report-form-group">
+                        <label for="report-brand">관심 브랜드</label>
+                        <input type="text" id="report-brand" class="report-input" readonly>
+                    </div>
+                    <div class="report-form-group">
+                        <label for="report-comment">추가 요청사항 (선택)</label>
+                        <textarea id="report-comment" class="report-textarea" rows="2" placeholder="예: 경쟁 브랜드와의 비교도 포함해 주세요"></textarea>
+                    </div>
+                    <button type="submit" class="report-submit-btn" id="report-submit">리포트 신청하기</button>
+                    <p class="report-form-status" id="report-status"></p>
+                </form>
+            </div>
+
+            <!-- Success state -->
+            <div class="report-success hidden" id="report-success">
+                <div class="report-success-icon">🎉</div>
+                <h3>신청 완료!</h3>
+                <p><strong id="report-success-email"></strong>으로 리포트를 보내드리겠습니다.</p>
+                <p class="report-success-note">현재 베타 운영 중으로 순서대로 안내드립니다. 빠른 시일 내에 연락드릴게요.</p>
             </div>
         </div>
     </div>
@@ -1109,6 +1219,62 @@
             applyFilter();
         });
 
+        /* ── Report Request Modal ── */
+        function openReportModal() {
+            if (!state.selectedBrand) return;
+            document.getElementById('report-subtitle').textContent =
+                `${state.selectedBrand.brandName} 브랜드에 대한 AI 분석 리포트를 신청합니다.`;
+            document.getElementById('report-brand').value = state.selectedBrand.brandName;
+            document.getElementById('report-email').value = '';
+            document.getElementById('report-comment').value = '';
+            document.getElementById('report-status').textContent = '';
+            document.getElementById('report-submit').disabled = false;
+            document.getElementById('report-form-wrap').style.display = 'block';
+            document.getElementById('report-success').classList.add('hidden');
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        document.getElementById('report-close').addEventListener('click', () => {
+            document.getElementById('report-modal').classList.add('hidden');
+        });
+        document.getElementById('report-modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('report-modal')) {
+                document.getElementById('report-modal').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('report-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const email = document.getElementById('report-email').value.trim();
+            const brand = document.getElementById('report-brand').value.trim();
+            const comment = document.getElementById('report-comment').value.trim();
+            const submitBtn = document.getElementById('report-submit');
+            const statusEl = document.getElementById('report-status');
+
+            submitBtn.disabled = true;
+            statusEl.textContent = '신청 중...';
+
+            const payload = JSON.stringify({
+                id: getVisitorId(),
+                email,
+                interested_brand: brand,
+                wanted_feature: 'AI 분석 리포트',
+                comment: comment || '-',
+                submitted_at: stamp()
+            });
+
+            try {
+                await sendSheetInsert(SURVEY_TABLE, payload);
+            } catch (err) {
+                console.warn('Report request log failed:', err.message);
+            }
+
+            // Show success state regardless (graceful fallback)
+            document.getElementById('report-form-wrap').style.display = 'none';
+            document.getElementById('report-success-email').textContent = email;
+            document.getElementById('report-success').classList.remove('hidden');
+        });
+
         /* ── Event Listeners ── */
         document.getElementById('brand-search').addEventListener('input', e => { state.searchText = e.target.value; applyFilter(); });
 
@@ -1127,6 +1293,7 @@
 
         document.getElementById('d-save-btn').addEventListener('click', () => { if (state.selectedBrand) toggleSaveBrand(state.selectedBrand.brandId); });
         document.getElementById('d-compare-btn').addEventListener('click', () => { if (state.selectedBrand) toggleCompare(state.selectedBrand.brandId); });
+        document.getElementById('d-report-btn').addEventListener('click', openReportModal);
         document.getElementById('compare-btn').addEventListener('click', renderCompareModal);
         document.getElementById('compare-clear-btn').addEventListener('click', () => {
             state.compareIds = []; updateCompareTray(); updateCompareBtn();
