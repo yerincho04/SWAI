@@ -3,26 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brand Intelligence Hub</title>
-    <meta name="description" content="Single-page brand statistics and DB chatbot experience powered by local franchise data.">
+    <title>브랜드 탐색기 — Brand Hub</title>
+    <meta name="description" content="프랜차이즈 공개 데이터를 기반으로 브랜드를 탐색하고 창업을 준비하세요.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="templatemo-glass-admin-style.css">
     <style>
+        /* --- Sidebar Nav --- */
+        .sidebar-nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; margin-top: 8px; }
+        .sidebar-nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-radius: 10px; font-size: 0.875rem;
+            color: var(--text-secondary); text-decoration: none; transition: all 0.2s;
+        }
+        .sidebar-nav-item:hover { background: var(--glass-border); color: var(--text-primary); }
+        .sidebar-nav-item.active { background: var(--emerald); color: #fff; }
+        .sidebar-nav-item svg { flex-shrink: 0; }
+
         /* --- Onboarding Modal --- */
         .onboarding-overlay {
             position: fixed; inset: 0; z-index: 1000;
             background: rgba(0,0,0,0.45); backdrop-filter: blur(6px);
-            display: flex; align-items: center; justify-content: center;
-            padding: 24px;
+            display: flex; align-items: center; justify-content: center; padding: 24px;
         }
         .onboarding-overlay.hidden { display: none; }
         .onboarding-card {
             background: var(--glass-bg); border: 1px solid var(--glass-border);
             border-radius: var(--border-radius); padding: 36px;
-            max-width: 520px; width: 100%;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+            max-width: 520px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.15);
         }
         .onboarding-card h2 { font-size: 1.25rem; margin-bottom: 8px; }
         .onboarding-card > p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 28px; }
@@ -44,7 +53,7 @@
             font-size: 0.78rem; color: var(--text-muted); margin-left: 8px;
         }
         .onboarding-pref-badge button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.85rem; }
-        .onboarding-pref-badge button:hover { color: var(--danger); }
+        .onboarding-pref-badge button:hover { color: var(--danger, #ef4444); }
 
         /* --- Filter Tabs --- */
         .brand-list-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
@@ -73,6 +82,68 @@
         .brand-item-save.saved { color: var(--coral); }
         .brand-list-item-head { display: flex; justify-content: space-between; align-items: center; }
         .brand-list-item-head-left { display: flex; align-items: center; gap: 6px; }
+
+        /* --- Compare Feature --- */
+        .compare-add-btn {
+            background: none; border: 1.5px solid var(--glass-border); border-radius: 20px;
+            padding: 5px 14px; font-size: 0.85rem; cursor: pointer; color: var(--text-secondary);
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .compare-add-btn:hover { border-color: #6366f1; color: #6366f1; }
+        .compare-add-btn.in-compare { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+        .compare-tray {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 40px; padding: 10px 20px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 500;
+            backdrop-filter: blur(12px); white-space: nowrap;
+        }
+        .compare-tray.hidden { display: none; }
+        .compare-tray-label { font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
+        .compare-brand-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            border-radius: 16px; padding: 4px 12px; font-size: 0.82rem;
+            background: rgba(99,102,241,0.12); color: #6366f1;
+        }
+        .compare-vs { color: var(--text-muted); font-size: 0.8rem; }
+        .compare-tray-clear { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.85rem; padding: 0 4px; }
+        .compare-tray-clear:hover { color: var(--danger, #ef4444); }
+
+        /* --- Compare Modal --- */
+        .compare-overlay {
+            position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center; padding: 24px;
+        }
+        .compare-overlay.hidden { display: none; }
+        .compare-card {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius); padding: 36px;
+            max-width: 740px; width: 100%; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+        }
+        .compare-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .compare-header h2 { font-size: 1.15rem; }
+        .compare-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.4rem; line-height: 1; }
+        .compare-close:hover { color: var(--danger, #ef4444); }
+        .compare-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .compare-table th, .compare-table td { padding: 10px 14px; border-bottom: 1px solid var(--glass-border); text-align: left; }
+        .compare-table th { color: var(--text-secondary); font-weight: 600; font-size: 0.85rem; }
+        .compare-table td:first-child { color: var(--text-muted); width: 28%; }
+        .compare-chat-actions { display: flex; gap: 12px; margin-top: 24px; }
+        .compare-chat-actions a { flex: 1; text-align: center; text-decoration: none; }
+
+        /* --- Detail panel action row --- */
+        .detail-action-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .detail-chat-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--emerald); color: #fff; border-radius: 20px;
+            padding: 6px 16px; font-size: 0.85rem; font-weight: 500;
+            text-decoration: none; transition: opacity 0.2s; white-space: nowrap;
+        }
+        .detail-chat-link:hover { opacity: 0.85; }
     </style>
 </head>
 <body>
@@ -88,32 +159,26 @@
                 <span class="logo-text">Brand Hub</span>
             </div>
 
-            <div class="single-nav-intro">
-                <p class="single-nav-kicker">Franchise Explorer</p>
-            </div>
-
-            <div class="single-nav-highlights">
-                <div class="single-highlight-card">
-                    <span>Source</span>
-                    <strong>FTC brand data</strong>
-                </div>
-                <div class="single-highlight-card">
-                    <span>Mode</span>
-                    <strong>Brand intelligence</strong>
-                </div>
-                <div class="single-highlight-card">
-                    <span>Chat</span>
-                    <strong>Per-brand assistant</strong>
-                </div>
-            </div>
+            <nav class="sidebar-nav">
+                <a class="sidebar-nav-item active" href="index.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    브랜드 탐색
+                </a>
+                <a class="sidebar-nav-item" href="chat.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    AI 상담
+                </a>
+            </nav>
 
             <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="user-avatar">AI</div>
-                    <div class="user-info">
-                        <div class="user-name">DB Chatbot</div>
-                        <div class="user-role">Local Knowledge Layer</div>
-                    </div>
+                <div class="single-highlight-card">
+                    <span>Source</span>
+                    <strong>공정위 가맹 공개정보</strong>
                 </div>
             </div>
         </aside>
@@ -121,10 +186,9 @@
         <main class="main-content main-content-single">
             <nav class="navbar">
                 <div class="page-header">
-                    <h1 class="page-title">Brand Statistics + Chatbot</h1>
+                    <h1 class="page-title">브랜드 탐색기</h1>
                 </div>
                 <div class="navbar-right">
-                    <a class="card-btn survey-link-btn" href="#survey-section">베타 신청</a>
                     <div class="search-box">
                         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
@@ -140,7 +204,7 @@
                             <path d="M2 12h2"/><path d="M20 12h2"/>
                             <path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>
                         </svg>
-                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
                             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                         </svg>
                     </button>
@@ -150,24 +214,11 @@
             <section class="brand-hub">
                 <section class="glass-card hub-hero">
                     <div class="hub-hero-copy">
-                        <span class="hub-kicker">Brand Intelligence Workspace</span>
-                        <h2>프랜차이즈 데이터를 보고, AI 창업 진단 리포트도 받아보세요</h2>
-                        <p>관심 있는 브랜드를 탐색하고, 곧 제공될 AI 창업 진단 리포트 베타에 신청해보세요.</p>
+                        <span class="hub-kicker">Franchise Intelligence</span>
+                        <h2>프랜차이즈 데이터로 창업을 준비하세요</h2>
+                        <p>공정거래위원회 가맹 공개 정보를 기반으로 브랜드별 매출, 점포 수, 창업 비용을 한눈에 확인하고 AI에게 물어보세요.</p>
                         <div class="hub-hero-actions">
-                            <a class="btn btn-primary hero-cta-btn" href="#survey-section">AI 진단 리포트 베타 신청</a>
-                            <a class="card-btn hero-secondary-btn" href="#survey-section">의견 남기기</a>
-                        </div>
-                        <div class="hub-teaser-grid">
-                            <div class="hub-teaser-card">
-                                <span>곧 제공</span>
-                                <strong>AI 창업 진단 리포트</strong>
-                                <p>예산, 업종, 관심 브랜드를 바탕으로 리포트를 받아보는 기능입니다.</p>
-                            </div>
-                            <div class="hub-teaser-card">
-                                <span>곧 제공</span>
-                                <strong>브랜드 적합도 추천</strong>
-                                <p>매출, 성장률, 폐점률을 기반으로 후보 브랜드를 추천합니다.</p>
-                            </div>
+                            <a class="btn btn-primary hero-cta-btn" href="chat.html">AI 브랜드 상담 →</a>
                         </div>
                     </div>
                     <div class="hub-hero-metrics">
@@ -209,40 +260,24 @@
                         <section class="glass-card brand-detail-panel">
                             <div class="panel-heading">
                                 <div>
-                                    <h2 class="card-title" id="brand-detail-name">Select a brand</h2>
-                                    <p class="card-subtitle" id="brand-detail-company">Choose a brand from the left to inspect its stats.</p>
+                                    <h2 class="card-title" id="brand-detail-name">브랜드를 선택하세요</h2>
+                                    <p class="card-subtitle" id="brand-detail-company">왼쪽 목록에서 브랜드를 선택하면 상세 정보가 표시됩니다.</p>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:8px;">
+                                <div class="detail-action-row">
+                                    <button class="compare-add-btn" id="compare-add-btn" type="button">⊕ 비교</button>
                                     <button class="save-brand-btn" id="detail-save-btn" type="button">♡ 저장</button>
+                                    <a class="detail-chat-link" id="detail-chat-btn" href="chat.html">AI 상담 →</a>
                                     <span class="brand-category-pill" id="brand-detail-category">-</span>
                                 </div>
                             </div>
 
                             <div class="brand-summary-grid">
-                                <div class="brand-summary-card">
-                                    <span>점포 수</span>
-                                    <strong id="metric-store-count">-</strong>
-                                </div>
-                                <div class="brand-summary-card">
-                                    <span>평균 매출</span>
-                                    <strong id="metric-avg-sales">-</strong>
-                                </div>
-                                <div class="brand-summary-card">
-                                    <span>성장률</span>
-                                    <strong id="metric-growth-rate">-</strong>
-                                </div>
-                                <div class="brand-summary-card">
-                                    <span>폐점률</span>
-                                    <strong id="metric-closure-rate">-</strong>
-                                </div>
-                                <div class="brand-summary-card">
-                                    <span>이탈률</span>
-                                    <strong id="metric-churn-rate">-</strong>
-                                </div>
-                                <div class="brand-summary-card">
-                                    <span>창업 총비용</span>
-                                    <strong id="metric-startup-cost">-</strong>
-                                </div>
+                                <div class="brand-summary-card"><span>점포 수</span><strong id="metric-store-count">-</strong></div>
+                                <div class="brand-summary-card"><span>평균 매출</span><strong id="metric-avg-sales">-</strong></div>
+                                <div class="brand-summary-card"><span>성장률</span><strong id="metric-growth-rate">-</strong></div>
+                                <div class="brand-summary-card"><span>폐점률</span><strong id="metric-closure-rate">-</strong></div>
+                                <div class="brand-summary-card"><span>이탈률</span><strong id="metric-churn-rate">-</strong></div>
+                                <div class="brand-summary-card"><span>창업 총비용</span><strong id="metric-startup-cost">-</strong></div>
                             </div>
 
                             <div class="brand-detail-body">
@@ -264,11 +299,7 @@
                                         <table class="brand-trend-table">
                                             <thead>
                                                 <tr>
-                                                    <th>연도</th>
-                                                    <th>점포 수</th>
-                                                    <th>신규</th>
-                                                    <th>폐점</th>
-                                                    <th>매출</th>
+                                                    <th>연도</th><th>점포 수</th><th>신규</th><th>폐점</th><th>매출</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="brand-trend-body"></tbody>
@@ -277,76 +308,7 @@
                                 </div>
                             </div>
                         </section>
-
-                        <section class="glass-card chatbot-panel">
-                            <div class="panel-heading">
-                                <div>
-                                    <h2 class="card-title">AI 브랜드 분석</h2>
-                                    <p class="card-subtitle" id="chatbot-subtitle">브랜드를 선택하면 AI가 해당 브랜드 데이터를 바탕으로 답변합니다.</p>
-                                </div>
-                                <span class="chatbot-status" id="chatbot-status">준비 중</span>
-                            </div>
-
-                            <div class="chatbot-messages" id="chatbot-messages">
-                                <div class="chatbot-message bot">
-                                    <p>브랜드를 선택한 뒤 질문을 보내면 `db_chatbot`이 해당 브랜드 중심으로 답변합니다.</p>
-                                </div>
-                            </div>
-
-                            <div class="chatbot-prompts">
-                                <button class="card-btn prompt-btn" type="button" data-prompt="최근 점포 수 추이를 요약해줘">최근 추이 요약</button>
-                                <button class="card-btn prompt-btn" type="button" data-prompt="창업 비용 관점에서 설명해줘">창업 비용 설명</button>
-                                <button class="card-btn prompt-btn" type="button" data-prompt="운영 안정성 관점에서 평가해줘">운영 안정성 평가</button>
-                            </div>
-
-                            <form class="chatbot-form" id="chatbot-form">
-                                <textarea id="chatbot-input" placeholder="예: 이 브랜드의 폐점률과 매출을 같이 설명해줘" rows="3"></textarea>
-                                <div class="chatbot-actions">
-                                    <button class="btn btn-primary" id="chatbot-send" type="submit" style="width: auto;">질문하기</button>
-                                </div>
-                            </form>
-                        </section>
                     </section>
-                </section>
-
-                <section class="glass-card survey-panel" id="survey-section">
-                    <div class="panel-heading">
-                        <div>
-                            <h2 class="card-title">베타 신청 / 설문조사</h2>
-                            <p class="card-subtitle">AI 창업 진단 리포트가 출시되면 가장 먼저 안내받고 싶은 분들의 반응을 확인하고 있습니다.</p>
-                        </div>
-                    </div>
-
-                    <form class="survey-form" id="survey-form">
-                        <div class="survey-form-grid">
-                            <div class="form-group">
-                                <label class="form-label" for="survey-email">Email</label>
-                                <input class="form-input" id="survey-email" type="email" placeholder="your@email.com" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="survey-brand">Interested Brand</label>
-                                <input class="form-input" id="survey-brand" type="text" placeholder="예: GS25, 이디야커피, 메가커피" required>
-                            </div>
-                            <div class="form-group survey-form-full">
-                                <label class="form-label" for="survey-interest">Most Wanted Feature</label>
-                                <select class="form-input survey-select" id="survey-interest" required>
-                                    <option value="">원하는 기능을 선택해 주세요</option>
-                                    <option value="AI 창업 진단 리포트">AI 창업 진단 리포트</option>
-                                    <option value="브랜드 적합도 추천">브랜드 적합도 추천</option>
-                                    <option value="브랜드 비교 분석">브랜드 비교 분석</option>
-                                    <option value="출시 알림만 받기">출시 알림만 받기</option>
-                                </select>
-                            </div>
-                            <div class="form-group survey-form-full">
-                                <label class="form-label" for="survey-comment">Comment Feedback</label>
-                                <textarea class="form-input survey-textarea" id="survey-comment" rows="5" placeholder="왜 이 기능이 필요하다고 느꼈는지, 어떤 도움을 기대하는지 남겨주세요." required></textarea>
-                            </div>
-                        </div>
-                        <div class="survey-actions">
-                            <p class="survey-status" id="survey-status"></p>
-                            <button class="btn btn-primary" id="survey-submit" type="submit" style="width: auto;">베타 신청하기</button>
-                        </div>
-                    </form>
                 </section>
             </section>
         </main>
@@ -378,6 +340,25 @@
         </div>
     </div>
 
+    <!-- Compare Tray (fixed bottom) -->
+    <div class="compare-tray hidden" id="compare-tray">
+        <span class="compare-tray-label">비교</span>
+        <div id="compare-tray-brands"></div>
+        <button class="btn btn-primary" id="compare-btn" style="width:auto;font-size:0.82rem;padding:6px 16px;" disabled>비교하기</button>
+        <button class="compare-tray-clear" id="compare-clear-btn" title="비교 초기화">✕</button>
+    </div>
+
+    <!-- Compare Modal -->
+    <div class="compare-overlay hidden" id="compare-modal">
+        <div class="compare-card">
+            <div class="compare-header">
+                <h2>브랜드 비교</h2>
+                <button class="compare-close" id="compare-close">✕</button>
+            </div>
+            <div id="compare-content"></div>
+        </div>
+    </div>
+
     <button class="mobile-menu-toggle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -387,815 +368,498 @@
     <script src="app-config.js"></script>
     <script src="templatemo-glass-admin-script.js"></script>
     <script>
-        (function () {
-            const BRAND_MASTER_URLS = [
-                './data/brand_master.json',
-                '../db_chatbot/build_api_selected/brand_master.json',
-                '/db_chatbot/build_api_selected/brand_master.json',
-                `${window.location.origin}/db_chatbot/build_api_selected/brand_master.json`
-            ];
-            const BRAND_YEAR_STATS_URLS = [
-                './data/brand_year_stats.json',
-                '../db_chatbot/build_api_selected/brand_year_stats.json',
-                '/db_chatbot/build_api_selected/brand_year_stats.json',
-                `${window.location.origin}/db_chatbot/build_api_selected/brand_year_stats.json`
-            ];
-            const BRAND_COSTS_URLS = [
-                './data/brand_store_type_costs.json',
-                '../db_chatbot/build_api_selected/brand_store_type_costs.json',
-                '/db_chatbot/build_api_selected/brand_store_type_costs.json',
-                `${window.location.origin}/db_chatbot/build_api_selected/brand_store_type_costs.json`
-            ];
-            const CHAT_API_URL = (window.APP_CONFIG && window.APP_CONFIG.chatApiUrl)
-                ? window.APP_CONFIG.chatApiUrl
-                : 'http://127.0.0.1:8001/api/chat';
-            const SHEET_SCRIPT_URL = (window.APP_CONFIG && window.APP_CONFIG.sheetScriptUrl)
-                ? window.APP_CONFIG.sheetScriptUrl
-                : '';
-            const VISITORS_TABLE = (window.APP_CONFIG && window.APP_CONFIG.visitorsTable)
-                ? window.APP_CONFIG.visitorsTable
-                : 'visitors';
-            const SURVEY_TABLE = (window.APP_CONFIG && window.APP_CONFIG.surveyTable)
-                ? window.APP_CONFIG.surveyTable
-                : 'tab_final';
+    (function () {
+        const BRAND_MASTER_URLS = [
+            './data/brand_master.json',
+            '../db_chatbot/build_api_selected/brand_master.json',
+            '/db_chatbot/build_api_selected/brand_master.json',
+            `${window.location.origin}/db_chatbot/build_api_selected/brand_master.json`
+        ];
+        const BRAND_YEAR_STATS_URLS = [
+            './data/brand_year_stats.json',
+            '../db_chatbot/build_api_selected/brand_year_stats.json',
+            '/db_chatbot/build_api_selected/brand_year_stats.json',
+            `${window.location.origin}/db_chatbot/build_api_selected/brand_year_stats.json`
+        ];
+        const BRAND_COSTS_URLS = [
+            './data/brand_store_type_costs.json',
+            '../db_chatbot/build_api_selected/brand_store_type_costs.json',
+            '/db_chatbot/build_api_selected/brand_store_type_costs.json',
+            `${window.location.origin}/db_chatbot/build_api_selected/brand_store_type_costs.json`
+        ];
+        const SHEET_SCRIPT_URL = (window.APP_CONFIG && window.APP_CONFIG.sheetScriptUrl) ? window.APP_CONFIG.sheetScriptUrl : '';
+        const VISITORS_TABLE = (window.APP_CONFIG && window.APP_CONFIG.visitorsTable) ? window.APP_CONFIG.visitorsTable : 'visitors';
 
-            const state = {
-                brands: [],
-                filteredBrands: [],
-                selectedBrand: null,
-                searchText: '',
-                visitorLogSent: false,
-                visitorIp: 'unknown',
-                freeQuestionUsed: false,
-                surveyUnlockedChat: false,
-                savedBrands: new Set(JSON.parse(localStorage.getItem('brandhub_saved') || '[]')),
-                showSaved: false,
-                userPrefs: JSON.parse(localStorage.getItem('brandhub_prefs') || 'null')
-            };
+        const state = {
+            brands: [],
+            filteredBrands: [],
+            selectedBrand: null,
+            searchText: '',
+            visitorLogSent: false,
+            visitorIp: 'unknown',
+            savedBrands: new Set(JSON.parse(localStorage.getItem('brandhub_saved') || '[]')),
+            showSaved: false,
+            userPrefs: JSON.parse(localStorage.getItem('brandhub_prefs') || 'null'),
+            compareIds: []
+        };
 
-            const els = {
-                search: document.getElementById('brand-search'),
-                list: document.getElementById('brand-list'),
-                listStatus: document.getElementById('brand-list-status'),
-                summaryBrandCount: document.getElementById('summary-brand-count'),
-                summaryFilterCount: document.getElementById('summary-filter-count'),
-                summaryLatestYear: document.getElementById('summary-latest-year'),
-                detailName: document.getElementById('brand-detail-name'),
-                detailCompany: document.getElementById('brand-detail-company'),
-                detailCategory: document.getElementById('brand-detail-category'),
-                metricStoreCount: document.getElementById('metric-store-count'),
-                metricAvgSales: document.getElementById('metric-avg-sales'),
-                metricGrowthRate: document.getElementById('metric-growth-rate'),
-                metricClosureRate: document.getElementById('metric-closure-rate'),
-                metricChurnRate: document.getElementById('metric-churn-rate'),
-                metricStartupCost: document.getElementById('metric-startup-cost'),
-                factBrandName: document.getElementById('fact-brand-name'),
-                factCompanyName: document.getElementById('fact-company-name'),
-                factCategory: document.getElementById('fact-category'),
-                factStartDate: document.getElementById('fact-start-date'),
-                factStoreType: document.getElementById('fact-store-type'),
-                factYear: document.getElementById('fact-year'),
-                trendBody: document.getElementById('brand-trend-body'),
-                chatbotMessages: document.getElementById('chatbot-messages'),
-                chatbotSubtitle: document.getElementById('chatbot-subtitle'),
-                chatbotStatus: document.getElementById('chatbot-status'),
-                chatbotForm: document.getElementById('chatbot-form'),
-                chatbotInput: document.getElementById('chatbot-input'),
-                surveyForm: document.getElementById('survey-form'),
-                surveyEmail: document.getElementById('survey-email'),
-                surveyBrand: document.getElementById('survey-brand'),
-                surveyInterest: document.getElementById('survey-interest'),
-                surveyComment: document.getElementById('survey-comment'),
-                surveyStatus: document.getElementById('survey-status'),
-                surveySubmit: document.getElementById('survey-submit'),
-                detailSaveBtn: document.getElementById('detail-save-btn'),
-                savedTabCount: document.getElementById('saved-tab-count'),
-                prefBadge: document.getElementById('pref-badge')
-            };
+        const els = {
+            search: document.getElementById('brand-search'),
+            list: document.getElementById('brand-list'),
+            listStatus: document.getElementById('brand-list-status'),
+            summaryBrandCount: document.getElementById('summary-brand-count'),
+            summaryFilterCount: document.getElementById('summary-filter-count'),
+            summaryLatestYear: document.getElementById('summary-latest-year'),
+            detailName: document.getElementById('brand-detail-name'),
+            detailCompany: document.getElementById('brand-detail-company'),
+            detailCategory: document.getElementById('brand-detail-category'),
+            metricStoreCount: document.getElementById('metric-store-count'),
+            metricAvgSales: document.getElementById('metric-avg-sales'),
+            metricGrowthRate: document.getElementById('metric-growth-rate'),
+            metricClosureRate: document.getElementById('metric-closure-rate'),
+            metricChurnRate: document.getElementById('metric-churn-rate'),
+            metricStartupCost: document.getElementById('metric-startup-cost'),
+            factBrandName: document.getElementById('fact-brand-name'),
+            factCompanyName: document.getElementById('fact-company-name'),
+            factCategory: document.getElementById('fact-category'),
+            factStartDate: document.getElementById('fact-start-date'),
+            factStoreType: document.getElementById('fact-store-type'),
+            factYear: document.getElementById('fact-year'),
+            trendBody: document.getElementById('brand-trend-body'),
+            detailSaveBtn: document.getElementById('detail-save-btn'),
+            savedTabCount: document.getElementById('saved-tab-count'),
+            prefBadge: document.getElementById('pref-badge')
+        };
 
-            function scrollToSurvey() {
-                const section = document.getElementById('survey-section');
-                if (section) {
-                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
-
-            function setChatAvailability() {
-                const locked = state.freeQuestionUsed && !state.surveyUnlockedChat;
-                const sendButton = document.getElementById('chatbot-send');
-                els.chatbotInput.disabled = locked;
-                if (sendButton) {
-                    sendButton.disabled = locked;
-                }
-                els.chatbotInput.placeholder = locked
-                    ? '추가 질문은 베타 신청 후 이용할 수 있습니다.'
-                    : '예: 이 브랜드의 폐점률과 매출을 같이 설명해줘';
-                if (locked) {
-                    els.chatbotStatus.textContent = '베타 신청 필요';
-                } else if (state.surveyUnlockedChat) {
-                    els.chatbotStatus.textContent = '이용 가능';
-                }
-            }
-
-            function showChatLimitNotice() {
-                const existingNotice = document.getElementById('chatbot-lock-btn');
-                if (existingNotice) return;
-
-                appendChatMessage(
-                    'bot',
-                    '첫 질문 체험이 끝났습니다.<br>추가 AI 진단을 이용하려면 아래 베타 신청 폼을 작성해 주세요.'
-                );
-
-                const action = document.createElement('div');
-                action.className = 'chatbot-lock-cta';
-                action.innerHTML = '<button type="button" class="btn btn-primary" id="chatbot-lock-btn" style="width: auto;">베타 신청하고 계속하기</button>';
-                els.chatbotMessages.appendChild(action);
-
-                const button = document.getElementById('chatbot-lock-btn');
-                if (button) {
-                    button.addEventListener('click', scrollToSurvey, { once: true });
-                }
-
-                els.chatbotMessages.scrollTop = els.chatbotMessages.scrollHeight;
-                setChatAvailability();
-            }
-
-            function triggerChatFallback(query) {
-                if (els.surveyBrand && !els.surveyBrand.value.trim() && state.selectedBrand) {
-                    els.surveyBrand.value = state.selectedBrand.brandName;
-                }
-
-                if (els.surveyInterest && !els.surveyInterest.value) {
-                    els.surveyInterest.value = 'AI 창업 진단 리포트';
-                }
-
-                const existingComment = els.surveyComment.value.trim();
-                const fallbackComment = `[Failed Chat Question] ${query}`;
-                if (!existingComment) {
-                    els.surveyComment.value = fallbackComment;
-                } else if (!existingComment.includes(fallbackComment)) {
-                    els.surveyComment.value = `${existingComment}\n${fallbackComment}`;
-                }
-
-                els.surveyStatus.textContent = 'AI 진단 기능이 현재 혼잡합니다. 질문 내용을 베타 신청과 함께 남겨주시면 우선적으로 안내드릴게요.';
-                scrollToSurvey();
-            }
-
-            function getCookieValue(name) {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) {
-                    return parts.pop().split(';').shift();
-                }
-                return '';
-            }
-
-            function setCookieValue(name, value, days) {
-                let expires = '';
-
-                if (days) {
-                    const date = new Date();
-                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                    expires = `; expires=${date.toUTCString()}`;
-                }
-
-                document.cookie = `${name}=${value || ''}${expires}; path=/`;
-            }
-
-            function getVisitorId() {
-                const cookieName = 'brandhub_uv';
-                const existingId = getCookieValue(cookieName);
-
-                if (existingId) {
-                    return existingId;
-                }
-
-                const newId = Math.random().toString(36).slice(2, 10);
-                setCookieValue(cookieName, newId, 365);
-                return newId;
-            }
-
-            function requestJsonp(url) {
-                return new Promise((resolve, reject) => {
-                    const callbackName = `sheetCallback_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-                    const script = document.createElement('script');
-                    const separator = url.includes('?') ? '&' : '?';
-                    const cleanup = () => {
-                        delete window[callbackName];
-                        if (script.parentNode) {
-                            script.parentNode.removeChild(script);
-                        }
-                    };
-
-                    window[callbackName] = (data) => {
-                        cleanup();
-                        resolve(data);
-                    };
-
-                    script.src = `${url}${separator}callback=${callbackName}`;
-                    script.onerror = () => {
-                        cleanup();
-                        reject(new Error('Failed to reach the Apps Script endpoint.'));
-                    };
-
-                    document.body.appendChild(script);
-                });
-            }
-
-            function getTimeStamp() {
+        /* --- Visitor Logging --- */
+        function getCookieValue(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+        function setCookieValue(name, value, days) {
+            let expires = '';
+            if (days) {
                 const date = new Date();
-                const pad = (value) => String(value).padStart(2, '0');
-                return [
-                    date.getFullYear(),
-                    pad(date.getMonth() + 1),
-                    pad(date.getDate())
-                ].join('-') + ' ' + [
-                    pad(date.getHours()),
-                    pad(date.getMinutes()),
-                    pad(date.getSeconds())
-                ].join(':');
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = `; expires=${date.toUTCString()}`;
             }
+            document.cookie = `${name}=${value || ''}${expires}; path=/`;
+        }
+        function getVisitorId() {
+            const cookieName = 'brandhub_uv';
+            const existingId = getCookieValue(cookieName);
+            if (existingId) return existingId;
+            const newId = Math.random().toString(36).slice(2, 10);
+            setCookieValue(cookieName, newId, 365);
+            return newId;
+        }
+        function requestJsonp(url) {
+            return new Promise((resolve, reject) => {
+                const cb = `sheetCallback_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+                const script = document.createElement('script');
+                const sep = url.includes('?') ? '&' : '?';
+                const cleanup = () => { delete window[cb]; if (script.parentNode) script.parentNode.removeChild(script); };
+                window[cb] = (data) => { cleanup(); resolve(data); };
+                script.src = `${url}${sep}callback=${cb}`;
+                script.onerror = () => { cleanup(); reject(new Error('JSONP failed')); };
+                document.body.appendChild(script);
+            });
+        }
+        function getTimeStamp() {
+            const d = new Date();
+            const p = (v) => String(v).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        }
+        function getUtmValue() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('utm') || params.get('utm_source') || params.get('source') || 'direct';
+        }
+        function getDeviceType() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+        }
+        async function sendSheetInsert(tableName, payload) {
+            if (!SHEET_SCRIPT_URL) throw new Error('Missing sheetScriptUrl');
+            const url = `${SHEET_SCRIPT_URL}?action=insert&table=${encodeURIComponent(tableName)}&data=${encodeURIComponent(payload)}`;
+            const res = await requestJsonp(url);
+            if (!res || !res.success) throw new Error(res?.data?.error || 'Insert failed');
+            return res;
+        }
+        async function fetchVisitorIp() {
+            try { const r = await fetch('https://api.ipify.org?format=json'); const d = await r.json(); return d.ip || 'unknown'; }
+            catch { return 'unknown'; }
+        }
+        async function logVisitorAccess() {
+            if (!SHEET_SCRIPT_URL || state.visitorLogSent) return;
+            state.visitorLogSent = true;
+            state.visitorIp = await fetchVisitorIp();
+            try {
+                await sendSheetInsert(VISITORS_TABLE, JSON.stringify({
+                    id: getVisitorId(), landingUrl: window.location.href,
+                    ip: state.visitorIp, referer: document.referrer || 'direct',
+                    time_stamp: getTimeStamp(), utm: getUtmValue(), device: getDeviceType()
+                }));
+            } catch (e) { console.error('Visitor log failed:', e); }
+        }
 
-            function getUtmValue() {
-                const params = new URLSearchParams(window.location.search);
-                return params.get('utm')
-                    || params.get('utm_source')
-                    || params.get('source')
-                    || 'direct';
-            }
+        /* --- Format Helpers --- */
+        function formatNumber(value) {
+            if (value === null || value === undefined || Number.isNaN(value)) return '-';
+            return Number(value).toLocaleString('ko-KR');
+        }
+        function formatKRW(value) {
+            if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
+            return `${Number(value).toLocaleString('ko-KR')} KRW`;
+        }
+        function formatPercent(value) {
+            if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
+            return `${(Number(value) * 100).toFixed(1)}%`;
+        }
+        function formatDate(value) {
+            if (!value) return '-';
+            const text = String(value);
+            if (text.length !== 8) return text;
+            return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
+        }
 
-            function getDeviceType() {
-                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-                    ? 'mobile'
-                    : 'desktop';
-            }
-
-            function buildVisitorPayload() {
-                return JSON.stringify({
-                    id: getVisitorId(),
-                    landingUrl: window.location.href,
-                    ip: state.visitorIp || 'unknown',
-                    referer: document.referrer || 'direct',
-                    time_stamp: getTimeStamp(),
-                    utm: getUtmValue(),
-                    device: getDeviceType()
-                });
-            }
-
-            async function sendSheetInsert(tableName, payload) {
-                if (!SHEET_SCRIPT_URL) {
-                    throw new Error('Missing sheetScriptUrl in app-config.js.');
+        /* --- Data Building --- */
+        function buildBrandDataset(master, yearStats, costRows) {
+            const statsByBrand = new Map();
+            const trendByBrand = new Map();
+            yearStats.forEach((row) => {
+                const id = row.brand_id;
+                if (!trendByBrand.has(id)) trendByBrand.set(id, []);
+                trendByBrand.get(id).push(row);
+                const cur = statsByBrand.get(id);
+                if (!cur || row.year > cur.year) statsByBrand.set(id, row);
+            });
+            const costTotals = new Map();
+            costRows.forEach((row) => {
+                const key = `${row.brand_id}:${row.year}:${row.store_type || 'Unknown'}`;
+                costTotals.set(key, (costTotals.get(key) || 0) + (Number(row.cost_amount_krw) || 0));
+            });
+            return master.map((brand) => {
+                const latestStats = statsByBrand.get(brand.brand_id) || null;
+                const trends = (trendByBrand.get(brand.brand_id) || []).sort((a, b) => b.year - a.year);
+                let startupCost = null, storeType = '-';
+                if (latestStats) {
+                    const costs = Array.from(costTotals.entries())
+                        .filter(([k]) => k.startsWith(`${brand.brand_id}:${latestStats.year}:`))
+                        .map(([k, total]) => ({ total, storeType: k.split(':')[2] }))
+                        .sort((a, b) => b.total - a.total);
+                    if (costs.length > 0) { startupCost = costs[0].total; storeType = costs[0].storeType; }
                 }
-
-                const requestUrl = `${SHEET_SCRIPT_URL}?action=insert&table=${encodeURIComponent(tableName)}&data=${encodeURIComponent(payload)}`;
-                const response = await requestJsonp(requestUrl);
-
-                if (!response || !response.success) {
-                    const message = response && response.data && response.data.error
-                        ? response.data.error
-                        : 'The script responded, but it did not report success.';
-                    throw new Error(message);
-                }
-
-                return response;
-            }
-
-            async function fetchVisitorIp() {
-                try {
-                    const response = await fetch('https://api.ipify.org?format=json');
-                    if (!response.ok) return 'unknown';
-                    const payload = await response.json();
-                    return payload.ip || 'unknown';
-                } catch (error) {
-                    return 'unknown';
-                }
-            }
-
-            async function logVisitorAccess() {
-                if (!SHEET_SCRIPT_URL || state.visitorLogSent) return;
-                state.visitorLogSent = true;
-                state.visitorIp = await fetchVisitorIp();
-
-                try {
-                    await sendSheetInsert(VISITORS_TABLE, buildVisitorPayload());
-                } catch (error) {
-                    console.error('Visitor log failed:', error);
-                }
-            }
-
-            function initSurveyForm() {
-                if (!els.surveyForm) return;
-
-                els.surveyForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-
-                    const email = els.surveyEmail.value.trim();
-                    const brand = els.surveyBrand.value.trim();
-                    const interest = els.surveyInterest.value.trim();
-                    const comment = els.surveyComment.value.trim();
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                    if (!email || !emailRegex.test(email)) {
-                        els.surveyStatus.textContent = 'Please enter a valid email address.';
-                        els.surveyEmail.focus();
-                        return;
-                    }
-
-                    if (!brand) {
-                        els.surveyStatus.textContent = 'Please share which brand you are most interested in.';
-                        els.surveyBrand.focus();
-                        return;
-                    }
-
-                    if (!interest) {
-                        els.surveyStatus.textContent = 'Please choose the feature you want most.';
-                        els.surveyInterest.focus();
-                        return;
-                    }
-
-                    if (!comment) {
-                        els.surveyStatus.textContent = 'Please leave a comment before submitting.';
-                        els.surveyComment.focus();
-                        return;
-                    }
-
-                    els.surveySubmit.disabled = true;
-                    els.surveyStatus.textContent = '저장 중...';
-
-                    const payload = JSON.stringify({
-                        id: getVisitorId(),
-                        email,
-                        interested_brand: brand,
-                        wanted_feature: interest,
-                        comment,
-                        submitted_at: getTimeStamp()
-                    });
-
-                    try {
-                        await sendSheetInsert(SURVEY_TABLE, payload);
-                    } catch (error) {
-                        console.warn('Survey sheet insert failed:', error.message);
-                    }
-
-                    els.surveyStatus.textContent = '베타 신청이 완료되었습니다. AI 채팅을 계속 이용하실 수 있습니다.';
-                    state.surveyUnlockedChat = true;
-                    setChatAvailability();
-                    els.surveyEmail.value = '';
-                    els.surveyBrand.value = '';
-                    els.surveyInterest.value = '';
-                    els.surveyComment.value = '';
-                    els.surveySubmit.disabled = false;
-                });
-            }
-
-            function formatNumber(value) {
-                if (value === null || value === undefined || Number.isNaN(value)) return '-';
-                return Number(value).toLocaleString('ko-KR');
-            }
-
-            function formatKRW(value) {
-                if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
-                return `${Number(value).toLocaleString('ko-KR')} KRW`;
-            }
-
-            function formatPercent(value) {
-                if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
-                return `${(Number(value) * 100).toFixed(1)}%`;
-            }
-
-            function formatDate(value) {
-                if (!value) return '-';
-                const text = String(value);
-                if (text.length !== 8) return text;
-                return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
-            }
-
-            function buildBrandDataset(master, yearStats, costRows) {
-                const statsByBrand = new Map();
-                const trendByBrand = new Map();
-
-                yearStats.forEach((row) => {
-                    const brandId = row.brand_id;
-                    if (!trendByBrand.has(brandId)) trendByBrand.set(brandId, []);
-                    trendByBrand.get(brandId).push(row);
-
-                    const current = statsByBrand.get(brandId);
-                    if (!current || row.year > current.year) {
-                        statsByBrand.set(brandId, row);
-                    }
-                });
-
-                const costTotals = new Map();
-                costRows.forEach((row) => {
-                    const key = `${row.brand_id}:${row.year}:${row.store_type || 'Unknown'}`;
-                    const previous = costTotals.get(key) || 0;
-                    costTotals.set(key, previous + (Number(row.cost_amount_krw) || 0));
-                });
-
-                return master.map((brand) => {
-                    const latestStats = statsByBrand.get(brand.brand_id) || null;
-                    const brandTrends = (trendByBrand.get(brand.brand_id) || []).sort((a, b) => b.year - a.year);
-
-                    let startupCost = null;
-                    let storeType = '-';
-                    if (latestStats) {
-                        const matchingCosts = Array.from(costTotals.entries())
-                            .filter(([key]) => key.startsWith(`${brand.brand_id}:${latestStats.year}:`))
-                            .map(([key, total]) => ({
-                                total,
-                                storeType: key.split(':')[2]
-                            }))
-                            .sort((a, b) => b.total - a.total);
-
-                        if (matchingCosts.length > 0) {
-                            startupCost = matchingCosts[0].total;
-                            storeType = matchingCosts[0].storeType;
-                        }
-                    }
-
-                    return {
-                        brandId: brand.brand_id,
-                        brandName: brand.brand_name,
-                        companyName: brand.company_name,
-                        categoryMain: brand.category_main,
-                        categorySub: brand.category_sub,
-                        franchiseStartDate: brand.franchise_start_date,
-                        latestStats,
-                        startupCost,
-                        storeType,
-                        trends: brandTrends
-                    };
-                }).sort((a, b) => (b.latestStats?.store_count || 0) - (a.latestStats?.store_count || 0));
-            }
-
-            async function fetchJsonWithFallback(urls) {
-                let lastError = null;
-
-                for (const url of urls) {
-                    try {
-                        const response = await fetch(url);
-                        if (!response.ok) {
-                            lastError = new Error(`${response.status} ${response.statusText} at ${url}`);
-                            continue;
-                        }
-                        return await response.json();
-                    } catch (error) {
-                        lastError = error;
-                    }
-                }
-
-                throw lastError || new Error('Unable to fetch JSON data.');
-            }
-
-            function renderBrandList() {
-                els.list.innerHTML = '';
-                const fragment = document.createDocumentFragment();
-
-                const displayList = state.showSaved
-                    ? state.filteredBrands.filter((b) => state.savedBrands.has(b.brandId))
-                    : state.filteredBrands;
-
-                displayList.slice(0, 120).forEach((brand) => {
-                    const saved = state.savedBrands.has(brand.brandId);
-                    const item = document.createElement('div');
-                    item.className = 'brand-list-item-wrapper';
-                    item.style.position = 'relative';
-
-                    const button = document.createElement('button');
-                    button.type = 'button';
-                    button.className = `brand-list-item${state.selectedBrand && state.selectedBrand.brandId === brand.brandId ? ' active' : ''}`;
-                    button.innerHTML = `
-                        <div class="brand-list-item-head">
-                            <div class="brand-list-item-head-left">
-                                <strong>${brand.brandName}</strong>
-                            </div>
-                            <div style="display:flex;align-items:center;gap:6px;">
-                                <span>${brand.latestStats ? brand.latestStats.year : '-'}</span>
-                                <button class="brand-item-save ${saved ? 'saved' : ''}" data-brand-id="${brand.brandId}" title="${saved ? '저장 취소' : '브랜드 저장'}">${saved ? '♥' : '♡'}</button>
-                            </div>
-                        </div>
-                        <p>${brand.companyName || '회사 정보 없음'}</p>
-                        <div class="brand-list-item-meta">
-                            <span>${brand.categorySub || brand.categoryMain || '-'}</span>
-                            <span>점포 ${formatNumber(brand.latestStats?.store_count)}</span>
-                        </div>
-                    `;
-                    button.addEventListener('click', (e) => {
-                        if (e.target.closest('.brand-item-save')) return;
-                        state.selectedBrand = brand;
-                        renderBrandList();
-                        renderBrandDetail();
-                        resetChatMessages();
-                    });
-                    button.querySelector('.brand-item-save').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleSaveBrand(brand.brandId);
-                    });
-                    fragment.appendChild(button);
-                });
-
-                els.list.appendChild(fragment);
-
-                const savedCount = state.savedBrands.size;
-                els.savedTabCount.textContent = savedCount ? ` (${savedCount})` : '';
-                els.listStatus.textContent = state.showSaved
-                    ? `저장한 브랜드 ${formatNumber(displayList.length)}개`
-                    : `${formatNumber(displayList.length)}개 브랜드`;
-                els.summaryBrandCount.textContent = formatNumber(state.brands.length);
-                els.summaryFilterCount.textContent = formatNumber(displayList.length);
-                els.summaryLatestYear.textContent = formatNumber(state.selectedBrand?.latestStats?.year || state.brands[0]?.latestStats?.year);
-            }
-
-            function renderBrandDetail() {
-                const brand = state.selectedBrand;
-                if (!brand) return;
-
-                const stats = brand.latestStats || {};
-                els.detailName.textContent = brand.brandName;
-                els.detailCompany.textContent = brand.companyName || '회사 정보 없음';
-                els.detailCategory.textContent = [brand.categoryMain, brand.categorySub].filter(Boolean).join(' / ') || '분류 없음';
-                els.metricStoreCount.textContent = formatNumber(stats.store_count);
-                els.metricAvgSales.textContent = formatKRW(stats.avg_sales_krw);
-                els.metricGrowthRate.textContent = formatPercent(stats.store_growth_rate);
-                els.metricClosureRate.textContent = formatPercent(stats.closure_rate);
-                els.metricChurnRate.textContent = formatPercent(stats.churn_rate);
-                els.metricStartupCost.textContent = formatKRW(brand.startupCost);
-                els.factBrandName.textContent = brand.brandName;
-                els.factCompanyName.textContent = brand.companyName || '-';
-                els.factCategory.textContent = [brand.categoryMain, brand.categorySub].filter(Boolean).join(' / ') || '-';
-                els.factStartDate.textContent = formatDate(brand.franchiseStartDate);
-                els.factStoreType.textContent = brand.storeType || '-';
-                els.factYear.textContent = stats.year || '-';
-                els.chatbotSubtitle.textContent = `${brand.brandName} 관련 질문을 보내면 DB 챗봇이 해당 브랜드 중심으로 답변합니다.`;
-
-                els.trendBody.innerHTML = brand.trends.slice(0, 6).map((row) => `
-                    <tr>
-                        <td>${row.year}</td>
-                        <td>${formatNumber(row.store_count)}</td>
-                        <td>${formatNumber(row.new_stores)}</td>
-                        <td>${formatNumber(row.closed_stores)}</td>
-                        <td>${formatKRW(row.avg_sales_krw)}</td>
-                    </tr>
-                `).join('');
-
-                updateDetailSaveButton();
-            }
-
-            function applyFilter() {
-                const keyword = state.searchText.trim().toLowerCase();
-                let base = state.brands;
-
-                if (state.userPrefs) {
-                    const { categories, budgetMin, budgetMax } = state.userPrefs;
-                    base = base.filter((brand) => {
-                        const catMatch = !categories.length || categories.includes(brand.categoryMain);
-                        const cost = brand.startupCost;
-                        const budgetMatch = budgetMin === null || cost === null || (cost >= budgetMin && cost <= budgetMax);
-                        return catMatch && budgetMatch;
-                    });
-                }
-
-                if (keyword) {
-                    base = base.filter((brand) => {
-                        const haystack = [brand.brandName, brand.companyName, brand.categoryMain, brand.categorySub].join(' ').toLowerCase();
-                        return haystack.includes(keyword);
-                    });
-                }
-
-                state.filteredBrands = base;
-
-                if (!state.selectedBrand || !state.filteredBrands.some((b) => b.brandId === state.selectedBrand.brandId)) {
-                    state.selectedBrand = state.filteredBrands[0] || state.brands[0] || null;
-                }
-
-                renderBrandList();
-                renderBrandDetail();
-            }
-
-            function appendChatMessage(role, text) {
-                const message = document.createElement('div');
-                message.className = `chatbot-message ${role}`;
-                message.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-                els.chatbotMessages.appendChild(message);
-                els.chatbotMessages.scrollTop = els.chatbotMessages.scrollHeight;
-                return message;
-            }
-
-            function resetChatMessages() {
-                els.chatbotMessages.innerHTML = '';
-                appendChatMessage('bot', `${state.selectedBrand.brandName}에 대해 궁금한 점을 물어보세요. 예: 점포 수 추이, 창업 비용, 운영 안정성`);
-                if (state.freeQuestionUsed && !state.surveyUnlockedChat) {
-                    showChatLimitNotice();
-                }
-            }
-
-            async function sendChat(query) {
-                if (!state.selectedBrand) return;
-                if (state.freeQuestionUsed && !state.surveyUnlockedChat) {
-                    showChatLimitNotice();
-                    return;
-                }
-
-                appendChatMessage('user', query);
-                const loading = appendChatMessage('bot', 'AI가 분석 중입니다...');
-                els.chatbotStatus.textContent = 'AI 분석 중...';
-
-                const coldStartTimer = setTimeout(() => {
-                    loading.innerHTML = '<p>서버가 처음 시작되고 있습니다. 20~30초 정도 기다려 주세요...</p>';
-                }, 12000);
-
-                try {
-                    const response = await fetch(CHAT_API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            query,
-                            brand_name: state.selectedBrand.brandName
-                        })
-                    });
-
-                    clearTimeout(coldStartTimer);
-                    const payload = await response.json();
-                    if (!response.ok) {
-                        throw new Error(payload.error || 'Chat API request failed.');
-                    }
-
-                    loading.innerHTML = `<p>${String(payload.answer || '답변이 비어 있습니다.').replace(/\n/g, '<br>')}</p>`;
-                    if (!state.surveyUnlockedChat) {
-                        state.freeQuestionUsed = true;
-                        showChatLimitNotice();
-                    } else {
-                        els.chatbotStatus.textContent = '응답 완료';
-                    }
-                } catch (error) {
-                    clearTimeout(coldStartTimer);
-                    loading.innerHTML = `<p>AI 응답에 실패했습니다.<br>질문 내용을 베타 신청과 함께 남겨주시면 우선적으로 안내드릴게요.</p>`;
-                    els.chatbotStatus.textContent = '연결 실패';
-                    triggerChatFallback(query);
-                }
-            }
-
-            function toggleSaveBrand(brandId) {
-                if (state.savedBrands.has(brandId)) {
-                    state.savedBrands.delete(brandId);
-                } else {
-                    state.savedBrands.add(brandId);
-                }
-                localStorage.setItem('brandhub_saved', JSON.stringify([...state.savedBrands]));
-                renderBrandList();
-                updateDetailSaveButton();
-            }
-
-            function updateDetailSaveButton() {
-                if (!els.detailSaveBtn || !state.selectedBrand) return;
-                const saved = state.savedBrands.has(state.selectedBrand.brandId);
-                els.detailSaveBtn.textContent = saved ? '♥ 저장됨' : '♡ 저장';
-                els.detailSaveBtn.classList.toggle('saved', saved);
-            }
-
-            function showOnboardingModal() {
-                const modal = document.getElementById('onboarding-modal');
-                if (!modal) return;
-
-                const categories = [...new Set(state.brands.map((b) => b.categoryMain).filter(Boolean))].sort();
-                const chipContainer = document.getElementById('onboarding-category-chips');
-                chipContainer.innerHTML = '';
-                categories.forEach((cat) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'chip';
-                    btn.textContent = cat;
-                    btn.addEventListener('click', () => btn.classList.toggle('selected'));
-                    chipContainer.appendChild(btn);
-                });
-
-                document.querySelectorAll('#onboarding-budget-chips .chip').forEach((btn) => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('#onboarding-budget-chips .chip').forEach((b) => b.classList.remove('selected'));
-                        btn.classList.add('selected');
-                    });
-                });
-
-                document.getElementById('onboarding-submit').onclick = () => {
-                    const selectedCats = [...chipContainer.querySelectorAll('.chip.selected')].map((b) => b.textContent);
-                    const budgetBtn = document.querySelector('#onboarding-budget-chips .chip.selected');
-                    const prefs = {
-                        categories: selectedCats,
-                        budgetMin: budgetBtn ? Number(budgetBtn.dataset.budgetMin) : null,
-                        budgetMax: budgetBtn ? Number(budgetBtn.dataset.budgetMax) : null,
-                        label: [
-                            selectedCats.length ? selectedCats.join(', ') : null,
-                            budgetBtn ? budgetBtn.textContent : null
-                        ].filter(Boolean).join(' · ')
-                    };
-                    state.userPrefs = prefs;
-                    localStorage.setItem('brandhub_prefs', JSON.stringify(prefs));
-                    localStorage.setItem('brandhub_onboarded', '1');
-                    modal.classList.add('hidden');
-                    applyFilter();
-                    updatePrefBadge();
+                return {
+                    brandId: brand.brand_id, brandName: brand.brand_name, companyName: brand.company_name,
+                    categoryMain: brand.category_main, categorySub: brand.category_sub,
+                    franchiseStartDate: brand.franchise_start_date, latestStats, startupCost, storeType, trends
                 };
+            }).sort((a, b) => (b.latestStats?.store_count || 0) - (a.latestStats?.store_count || 0));
+        }
 
-                document.getElementById('onboarding-skip').onclick = () => {
-                    localStorage.setItem('brandhub_onboarded', '1');
-                    modal.classList.add('hidden');
-                };
-
-                modal.classList.remove('hidden');
+        async function fetchJsonWithFallback(urls) {
+            let lastError = null;
+            for (const url of urls) {
+                try {
+                    const r = await fetch(url);
+                    if (!r.ok) { lastError = new Error(`${r.status} at ${url}`); continue; }
+                    return await r.json();
+                } catch (e) { lastError = e; }
             }
+            throw lastError || new Error('Unable to fetch JSON data.');
+        }
 
-            function updatePrefBadge() {
-                if (!els.prefBadge) return;
-                if (!state.userPrefs || !state.userPrefs.label) {
-                    els.prefBadge.innerHTML = '';
-                    return;
-                }
-                els.prefBadge.innerHTML = `
-                    <span class="onboarding-pref-badge">
-                        · ${state.userPrefs.label}
-                        <button title="필터 초기화" id="clear-pref-btn">✕</button>
-                    </span>`;
-                document.getElementById('clear-pref-btn').addEventListener('click', () => {
-                    state.userPrefs = null;
-                    localStorage.removeItem('brandhub_prefs');
-                    localStorage.removeItem('brandhub_onboarded');
-                    els.prefBadge.innerHTML = '';
-                    applyFilter();
+        /* --- Render --- */
+        function renderBrandList() {
+            els.list.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            const displayList = state.showSaved
+                ? state.filteredBrands.filter((b) => state.savedBrands.has(b.brandId))
+                : state.filteredBrands;
+
+            displayList.slice(0, 120).forEach((brand) => {
+                const saved = state.savedBrands.has(brand.brandId);
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = `brand-list-item${state.selectedBrand && state.selectedBrand.brandId === brand.brandId ? ' active' : ''}`;
+                button.innerHTML = `
+                    <div class="brand-list-item-head">
+                        <div class="brand-list-item-head-left"><strong>${brand.brandName}</strong></div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span>${brand.latestStats ? brand.latestStats.year : '-'}</span>
+                            <button class="brand-item-save ${saved ? 'saved' : ''}" data-brand-id="${brand.brandId}" title="${saved ? '저장 취소' : '브랜드 저장'}">${saved ? '♥' : '♡'}</button>
+                        </div>
+                    </div>
+                    <p>${brand.companyName || '회사 정보 없음'}</p>
+                    <div class="brand-list-item-meta">
+                        <span>${brand.categorySub || brand.categoryMain || '-'}</span>
+                        <span>점포 ${formatNumber(brand.latestStats?.store_count)}</span>
+                    </div>
+                `;
+                button.addEventListener('click', (e) => {
+                    if (e.target.closest('.brand-item-save')) return;
+                    state.selectedBrand = brand;
+                    renderBrandList();
+                    renderBrandDetail();
+                });
+                button.querySelector('.brand-item-save').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSaveBrand(brand.brandId);
+                });
+                fragment.appendChild(button);
+            });
+
+            els.list.appendChild(fragment);
+            const savedCount = state.savedBrands.size;
+            els.savedTabCount.textContent = savedCount ? ` (${savedCount})` : '';
+            els.listStatus.textContent = state.showSaved
+                ? `저장한 브랜드 ${formatNumber(displayList.length)}개`
+                : `${formatNumber(displayList.length)}개 브랜드`;
+            els.summaryBrandCount.textContent = formatNumber(state.brands.length);
+            els.summaryFilterCount.textContent = formatNumber(displayList.length);
+            els.summaryLatestYear.textContent = formatNumber(state.selectedBrand?.latestStats?.year || state.brands[0]?.latestStats?.year);
+        }
+
+        function renderBrandDetail() {
+            const brand = state.selectedBrand;
+            if (!brand) return;
+            const stats = brand.latestStats || {};
+            els.detailName.textContent = brand.brandName;
+            els.detailCompany.textContent = brand.companyName || '회사 정보 없음';
+            els.detailCategory.textContent = [brand.categoryMain, brand.categorySub].filter(Boolean).join(' / ') || '분류 없음';
+            els.metricStoreCount.textContent = formatNumber(stats.store_count);
+            els.metricAvgSales.textContent = formatKRW(stats.avg_sales_krw);
+            els.metricGrowthRate.textContent = formatPercent(stats.store_growth_rate);
+            els.metricClosureRate.textContent = formatPercent(stats.closure_rate);
+            els.metricChurnRate.textContent = formatPercent(stats.churn_rate);
+            els.metricStartupCost.textContent = formatKRW(brand.startupCost);
+            els.factBrandName.textContent = brand.brandName;
+            els.factCompanyName.textContent = brand.companyName || '-';
+            els.factCategory.textContent = [brand.categoryMain, brand.categorySub].filter(Boolean).join(' / ') || '-';
+            els.factStartDate.textContent = formatDate(brand.franchiseStartDate);
+            els.factStoreType.textContent = brand.storeType || '-';
+            els.factYear.textContent = stats.year || '-';
+            els.trendBody.innerHTML = brand.trends.slice(0, 6).map((row) => `
+                <tr>
+                    <td>${row.year}</td><td>${formatNumber(row.store_count)}</td>
+                    <td>${formatNumber(row.new_stores)}</td><td>${formatNumber(row.closed_stores)}</td>
+                    <td>${formatKRW(row.avg_sales_krw)}</td>
+                </tr>
+            `).join('');
+            updateDetailSaveButton();
+            updateCompareAddBtn();
+            const chatBtn = document.getElementById('detail-chat-btn');
+            if (chatBtn) chatBtn.href = `chat.html?brand=${encodeURIComponent(brand.brandId)}`;
+        }
+
+        function applyFilter() {
+            const keyword = state.searchText.trim().toLowerCase();
+            let base = state.brands;
+            if (state.userPrefs) {
+                const { categories, budgetMin, budgetMax } = state.userPrefs;
+                base = base.filter((brand) => {
+                    const catMatch = !categories.length || categories.includes(brand.categoryMain);
+                    const cost = brand.startupCost;
+                    const budgetMatch = budgetMin === null || cost === null || (cost >= budgetMin && cost <= budgetMax);
+                    return catMatch && budgetMatch;
                 });
             }
-
-            async function loadData() {
-                try {
-                    const [master, yearStats, costs] = await Promise.all([
-                        fetchJsonWithFallback(BRAND_MASTER_URLS),
-                        fetchJsonWithFallback(BRAND_YEAR_STATS_URLS),
-                        fetchJsonWithFallback(BRAND_COSTS_URLS)
-                    ]);
-
-                    state.brands = buildBrandDataset(master, yearStats, costs);
-                    state.filteredBrands = state.brands;
-                    state.selectedBrand = state.brands[0] || null;
-
-                    updatePrefBadge();
-                    applyFilter();
-                    if (state.selectedBrand) {
-                        resetChatMessages();
-                        updateDetailSaveButton();
-                    }
-
-                    if (!localStorage.getItem('brandhub_onboarded')) {
-                        showOnboardingModal();
-                    }
-                } catch (error) {
-                    els.listStatus.textContent = 'Failed to load brand data.';
-                    els.list.innerHTML = `<div class="brand-list-empty">Brand data could not be loaded.<br>${error.message}<br><br>Local dev: open Live Server from the workspace root or keep <code>./data</code> populated.<br>Deployment: make sure the Netlify build copied JSON files into <code>templatemo_607_glass_admin/data</code>.</div>`;
-                }
+            if (keyword) {
+                base = base.filter((brand) => {
+                    const hay = [brand.brandName, brand.companyName, brand.categoryMain, brand.categorySub].join(' ').toLowerCase();
+                    return hay.includes(keyword);
+                });
             }
+            state.filteredBrands = base;
+            if (!state.selectedBrand || !state.filteredBrands.some((b) => b.brandId === state.selectedBrand.brandId)) {
+                state.selectedBrand = state.filteredBrands[0] || state.brands[0] || null;
+            }
+            renderBrandList();
+            renderBrandDetail();
+        }
 
-            els.search.addEventListener('input', (event) => {
-                state.searchText = event.target.value;
+        /* --- Save --- */
+        function toggleSaveBrand(brandId) {
+            if (state.savedBrands.has(brandId)) state.savedBrands.delete(brandId);
+            else state.savedBrands.add(brandId);
+            localStorage.setItem('brandhub_saved', JSON.stringify([...state.savedBrands]));
+            renderBrandList();
+            updateDetailSaveButton();
+        }
+        function updateDetailSaveButton() {
+            if (!els.detailSaveBtn || !state.selectedBrand) return;
+            const saved = state.savedBrands.has(state.selectedBrand.brandId);
+            els.detailSaveBtn.textContent = saved ? '♥ 저장됨' : '♡ 저장';
+            els.detailSaveBtn.classList.toggle('saved', saved);
+        }
+
+        /* --- Compare --- */
+        function toggleCompare(brandId) {
+            const idx = state.compareIds.indexOf(brandId);
+            if (idx >= 0) state.compareIds.splice(idx, 1);
+            else if (state.compareIds.length < 2) state.compareIds.push(brandId);
+            updateCompareTray();
+            updateCompareAddBtn();
+        }
+        function updateCompareAddBtn() {
+            const btn = document.getElementById('compare-add-btn');
+            if (!btn || !state.selectedBrand) return;
+            const inCompare = state.compareIds.includes(state.selectedBrand.brandId);
+            btn.textContent = inCompare ? '⊖ 비교 중' : '⊕ 비교';
+            btn.classList.toggle('in-compare', inCompare);
+        }
+        function updateCompareTray() {
+            const tray = document.getElementById('compare-tray');
+            const trayBrands = document.getElementById('compare-tray-brands');
+            const compareBtn = document.getElementById('compare-btn');
+            if (!tray) return;
+            if (state.compareIds.length === 0) { tray.classList.add('hidden'); return; }
+            tray.classList.remove('hidden');
+            const brands = state.compareIds.map(id => state.brands.find(b => b.brandId === id)).filter(Boolean);
+            trayBrands.innerHTML = brands.map(b => `<span class="compare-brand-chip">${b.brandName}</span>`).join('<span class="compare-vs"> vs </span>');
+            if (compareBtn) compareBtn.disabled = state.compareIds.length < 2;
+        }
+        function renderCompareModal() {
+            const brands = state.compareIds.map(id => state.brands.find(b => b.brandId === id)).filter(Boolean);
+            if (brands.length < 2) return;
+            const [a, b] = brands;
+            const rows = [
+                ['업종', [a.categoryMain, a.categorySub].filter(Boolean).join(' / '), [b.categoryMain, b.categorySub].filter(Boolean).join(' / ')],
+                ['점포 수', formatNumber(a.latestStats?.store_count), formatNumber(b.latestStats?.store_count)],
+                ['평균 매출', formatKRW(a.latestStats?.avg_sales_krw), formatKRW(b.latestStats?.avg_sales_krw)],
+                ['성장률', formatPercent(a.latestStats?.store_growth_rate), formatPercent(b.latestStats?.store_growth_rate)],
+                ['폐점률', formatPercent(a.latestStats?.closure_rate), formatPercent(b.latestStats?.closure_rate)],
+                ['이탈률', formatPercent(a.latestStats?.churn_rate), formatPercent(b.latestStats?.churn_rate)],
+                ['창업 총비용', formatKRW(a.startupCost), formatKRW(b.startupCost)],
+                ['기준 연도', String(a.latestStats?.year || '-'), String(b.latestStats?.year || '-')]
+            ];
+            document.getElementById('compare-content').innerHTML = `
+                <table class="compare-table">
+                    <thead><tr><th>지표</th><th>${a.brandName}</th><th>${b.brandName}</th></tr></thead>
+                    <tbody>${rows.map(([label, va, vb]) => `<tr><td>${label}</td><td>${va}</td><td>${vb}</td></tr>`).join('')}</tbody>
+                </table>
+                <div class="compare-chat-actions">
+                    <a class="btn btn-primary" href="chat.html?brand=${encodeURIComponent(a.brandId)}">${a.brandName} AI 상담</a>
+                    <a class="btn btn-primary" href="chat.html?brand=${encodeURIComponent(b.brandId)}">${b.brandName} AI 상담</a>
+                </div>
+            `;
+            document.getElementById('compare-modal').classList.remove('hidden');
+        }
+
+        /* --- Onboarding --- */
+        function showOnboardingModal() {
+            const modal = document.getElementById('onboarding-modal');
+            if (!modal) return;
+            const categories = [...new Set(state.brands.map((b) => b.categoryMain).filter(Boolean))].sort();
+            const chipContainer = document.getElementById('onboarding-category-chips');
+            chipContainer.innerHTML = '';
+            categories.forEach((cat) => {
+                const btn = document.createElement('button');
+                btn.className = 'chip'; btn.textContent = cat;
+                btn.addEventListener('click', () => btn.classList.toggle('selected'));
+                chipContainer.appendChild(btn);
+            });
+            document.querySelectorAll('#onboarding-budget-chips .chip').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#onboarding-budget-chips .chip').forEach((b) => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                });
+            });
+            document.getElementById('onboarding-submit').onclick = () => {
+                const selectedCats = [...chipContainer.querySelectorAll('.chip.selected')].map((b) => b.textContent);
+                const budgetBtn = document.querySelector('#onboarding-budget-chips .chip.selected');
+                const prefs = {
+                    categories: selectedCats,
+                    budgetMin: budgetBtn ? Number(budgetBtn.dataset.budgetMin) : null,
+                    budgetMax: budgetBtn ? Number(budgetBtn.dataset.budgetMax) : null,
+                    label: [selectedCats.length ? selectedCats.join(', ') : null, budgetBtn ? budgetBtn.textContent : null].filter(Boolean).join(' · ')
+                };
+                state.userPrefs = prefs;
+                localStorage.setItem('brandhub_prefs', JSON.stringify(prefs));
+                localStorage.setItem('brandhub_onboarded', '1');
+                modal.classList.add('hidden');
+                applyFilter();
+                updatePrefBadge();
+            };
+            document.getElementById('onboarding-skip').onclick = () => {
+                localStorage.setItem('brandhub_onboarded', '1');
+                modal.classList.add('hidden');
+            };
+            modal.classList.remove('hidden');
+        }
+
+        function updatePrefBadge() {
+            if (!els.prefBadge) return;
+            if (!state.userPrefs || !state.userPrefs.label) { els.prefBadge.innerHTML = ''; return; }
+            els.prefBadge.innerHTML = `
+                <span class="onboarding-pref-badge">
+                    · ${state.userPrefs.label}
+                    <button title="필터 초기화" id="clear-pref-btn">✕</button>
+                </span>`;
+            document.getElementById('clear-pref-btn').addEventListener('click', () => {
+                state.userPrefs = null;
+                localStorage.removeItem('brandhub_prefs');
+                localStorage.removeItem('brandhub_onboarded');
+                els.prefBadge.innerHTML = '';
                 applyFilter();
             });
+        }
 
-            document.getElementById('tab-all').addEventListener('click', () => {
-                state.showSaved = false;
-                document.getElementById('tab-all').classList.add('active');
-                document.getElementById('tab-saved').classList.remove('active');
-                renderBrandList();
-            });
+        /* --- Load --- */
+        async function loadData() {
+            try {
+                const [master, yearStats, costs] = await Promise.all([
+                    fetchJsonWithFallback(BRAND_MASTER_URLS),
+                    fetchJsonWithFallback(BRAND_YEAR_STATS_URLS),
+                    fetchJsonWithFallback(BRAND_COSTS_URLS)
+                ]);
+                state.brands = buildBrandDataset(master, yearStats, costs);
+                state.filteredBrands = state.brands;
+                state.selectedBrand = state.brands[0] || null;
+                updatePrefBadge();
+                applyFilter();
+                if (!localStorage.getItem('brandhub_onboarded')) showOnboardingModal();
+            } catch (error) {
+                els.listStatus.textContent = 'Failed to load brand data.';
+                els.list.innerHTML = `<div class="brand-list-empty">Brand data could not be loaded.<br>${error.message}<br><br>Local dev: use Live Server from workspace root, or populate <code>./data/</code>.</div>`;
+            }
+        }
 
-            document.getElementById('tab-saved').addEventListener('click', () => {
-                state.showSaved = true;
-                document.getElementById('tab-saved').classList.add('active');
-                document.getElementById('tab-all').classList.remove('active');
-                renderBrandList();
-            });
+        /* --- Event Listeners --- */
+        els.search.addEventListener('input', (e) => { state.searchText = e.target.value; applyFilter(); });
 
-            els.detailSaveBtn.addEventListener('click', () => {
-                if (state.selectedBrand) toggleSaveBrand(state.selectedBrand.brandId);
-            });
+        document.getElementById('tab-all').addEventListener('click', () => {
+            state.showSaved = false;
+            document.getElementById('tab-all').classList.add('active');
+            document.getElementById('tab-saved').classList.remove('active');
+            renderBrandList();
+        });
+        document.getElementById('tab-saved').addEventListener('click', () => {
+            state.showSaved = true;
+            document.getElementById('tab-saved').classList.add('active');
+            document.getElementById('tab-all').classList.remove('active');
+            renderBrandList();
+        });
 
-            els.chatbotForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                const query = els.chatbotInput.value.trim();
-                if (!query || !state.selectedBrand) return;
-                els.chatbotInput.value = '';
-                await sendChat(query);
-            });
+        els.detailSaveBtn.addEventListener('click', () => { if (state.selectedBrand) toggleSaveBrand(state.selectedBrand.brandId); });
 
-            document.querySelectorAll('.prompt-btn').forEach((button) => {
-                button.addEventListener('click', async () => {
-                    if (!state.selectedBrand) return;
-                    await sendChat(button.dataset.prompt || '');
-                });
-            });
+        document.getElementById('compare-add-btn').addEventListener('click', () => {
+            if (state.selectedBrand) toggleCompare(state.selectedBrand.brandId);
+        });
+        document.getElementById('compare-btn').addEventListener('click', renderCompareModal);
+        document.getElementById('compare-clear-btn').addEventListener('click', () => {
+            state.compareIds = [];
+            updateCompareTray();
+            updateCompareAddBtn();
+        });
+        document.getElementById('compare-close').addEventListener('click', () => {
+            document.getElementById('compare-modal').classList.add('hidden');
+        });
 
-            initSurveyForm();
-            logVisitorAccess();
-            setChatAvailability();
-            loadData();
-        })();
+        logVisitorAccess();
+        loadData();
+    })();
     </script>
 </body>
 </html>
