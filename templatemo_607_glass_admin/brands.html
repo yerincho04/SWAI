@@ -274,22 +274,54 @@
         .cost-row.cost-total .cost-label { color: var(--text-primary); font-weight: 600; }
         .cost-row.cost-total .cost-val { color: var(--emerald); font-size: 0.95rem; }
 
-        /* ── Budget Range in Filter Panel ── */
+        /* ── Budget Filter Panel ── */
         .budget-presets-scroll {
             display: flex; gap: 7px; overflow-x: auto; padding-bottom: 8px;
             scrollbar-width: thin; scrollbar-color: var(--glass-border) transparent;
+            margin-bottom: 12px;
         }
         .budget-presets-scroll .fchip { flex-shrink: 0; }
-        .budget-range-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-        .budget-range-input {
-            flex: 1; padding: 7px 10px; border-radius: 8px; min-width: 0;
-            border: 1.5px solid var(--glass-border); background: transparent;
-            color: var(--text-primary); font-size: 0.82rem; font-family: inherit; outline: none;
-            transition: border-color 0.18s;
+
+        /* Dual range slider (reused from index.html style) */
+        .dual-range-wrap { margin: 4px 0 6px; }
+        .dual-range-slider {
+            position: relative; height: 30px;
+            display: flex; align-items: center; margin-bottom: 4px;
         }
-        .budget-range-input:focus { border-color: var(--emerald); }
-        .budget-range-sep { color: var(--text-muted); font-size: 0.85rem; flex-shrink: 0; }
-        .budget-range-unit { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+        .slider-track {
+            position: absolute; width: 100%; height: 4px;
+            background: var(--glass-border); border-radius: 2px; pointer-events: none;
+        }
+        .slider-fill {
+            position: absolute; height: 4px; background: #6366f1;
+            border-radius: 2px; pointer-events: none;
+        }
+        .slider-thumb {
+            position: absolute; width: 100%; height: 0;
+            -webkit-appearance: none; appearance: none;
+            background: transparent; pointer-events: none;
+            outline: none; margin: 0; padding: 0;
+        }
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #fff; border: 2.5px solid #6366f1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;
+            pointer-events: all; transition: transform 0.12s;
+        }
+        .slider-thumb::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .slider-thumb::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #fff; border: 2.5px solid #6366f1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; pointer-events: all;
+        }
+        .slider-labels {
+            display: flex; justify-content: space-between;
+            font-size: 0.78rem; gap: 6px; align-items: center; margin-top: 4px;
+        }
+        .slider-val { font-weight: 700; color: #6366f1; }
+        .slider-none { color: var(--text-muted); }
+        .slider-sep { color: var(--text-muted); flex-shrink: 0; }
 
         /* ── Compare Tray ── */
         .compare-tray {
@@ -414,8 +446,8 @@
                         <div class="filter-chip-grid" id="fp-category-chips"></div>
                     </div>
                     <div class="filter-panel-section">
-                        <div class="filter-panel-label">창업 예산 — 빠른 선택 또는 직접 입력 (만원)</div>
-                        <!-- Horizontally scrollable preset chips -->
+                        <div class="filter-panel-label">창업 예산 — 빠른 선택 또는 슬라이더 (단위: 만원)</div>
+                        <!-- Scrollable preset chips -->
                         <div class="budget-presets-scroll" id="fp-budget-presets">
                             <button class="fchip budget" data-min="0" data-max="5000">5천만 미만</button>
                             <button class="fchip budget" data-min="5000" data-max="10000">5천만~1억</button>
@@ -425,12 +457,22 @@
                             <button class="fchip budget" data-min="50000" data-max="100000">5억~10억</button>
                             <button class="fchip budget" data-min="100000" data-max="999999">10억 이상</button>
                         </div>
-                        <!-- Custom range inputs -->
-                        <div class="budget-range-row">
-                            <input type="number" id="fp-budget-min" class="budget-range-input" min="0" step="500" placeholder="최소">
-                            <span class="budget-range-sep">~</span>
-                            <input type="number" id="fp-budget-max" class="budget-range-input" min="0" step="500" placeholder="최대">
-                            <span class="budget-range-unit">만원</span>
+                        <!-- Dual range slider -->
+                        <div class="dual-range-wrap">
+                            <div class="dual-range-slider">
+                                <div class="slider-track">
+                                    <div class="slider-fill" id="fp-slider-fill"></div>
+                                </div>
+                                <input type="range" class="slider-thumb" id="fp-slider-min"
+                                       min="0" max="100000" step="1000" value="0">
+                                <input type="range" class="slider-thumb" id="fp-slider-max"
+                                       min="0" max="100000" step="1000" value="100000">
+                            </div>
+                            <div class="slider-labels">
+                                <span id="fp-slider-min-lbl" class="slider-none">제한 없음</span>
+                                <span class="slider-sep">~</span>
+                                <span id="fp-slider-max-lbl" class="slider-none">제한 없음</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -928,6 +970,34 @@
             document.getElementById('compare-modal').classList.remove('hidden');
         }
 
+        /* ── Budget slider helpers (filter panel) ── */
+        const FP_BUDGET_MAX = 100000;
+
+        function fpFmtManwon(v) {
+            if (v <= 0) return '0원';
+            const eok = Math.floor(v / 10000), man = v % 10000;
+            const parts = [];
+            if (eok > 0) parts.push(`${eok}억`);
+            if (man > 0) parts.push(`${man.toLocaleString('ko-KR')}만`);
+            return parts.join(' ') + '원';
+        }
+
+        function updateFpSlider() {
+            const sMin = document.getElementById('fp-slider-min');
+            const sMax = document.getElementById('fp-slider-max');
+            const fill = document.getElementById('fp-slider-fill');
+            const minLbl = document.getElementById('fp-slider-min-lbl');
+            const maxLbl = document.getElementById('fp-slider-max-lbl');
+            if (!sMin) return;
+            const lo = Number(sMin.value), hi = Number(sMax.value);
+            fill.style.left = (lo / FP_BUDGET_MAX * 100) + '%';
+            fill.style.width = ((hi - lo) / FP_BUDGET_MAX * 100) + '%';
+            minLbl.textContent = lo === 0 ? '제한 없음' : fpFmtManwon(lo);
+            minLbl.className = lo === 0 ? 'slider-none' : 'slider-val';
+            maxLbl.textContent = hi >= FP_BUDGET_MAX ? '제한 없음' : fpFmtManwon(hi);
+            maxLbl.className = hi >= FP_BUDGET_MAX ? 'slider-none' : 'slider-val';
+        }
+
         /* ── Filter Panel ── */
         function populateFilterPanel() {
             // Category chips
@@ -943,31 +1013,45 @@
                 container.appendChild(btn);
             });
 
-            // Budget — preset chips (in 만원) + custom range inputs
+            // Budget slider + preset chips
+            const sMin = document.getElementById('fp-slider-min');
+            const sMax = document.getElementById('fp-slider-max');
             const presetBtns = document.querySelectorAll('#fp-budget-presets .fchip');
-            const minInput = document.getElementById('fp-budget-min');
-            const maxInput = document.getElementById('fp-budget-max');
 
-            // Restore current prefs into inputs
-            minInput.value = state.userPrefs?.budgetMin != null ? state.userPrefs.budgetMin : '';
-            maxInput.value = (state.userPrefs?.budgetMax != null && state.userPrefs.budgetMax < 999999) ? state.userPrefs.budgetMax : '';
+            // Restore slider from current prefs
+            const lo = state.userPrefs?.budgetMin ?? 0;
+            const hi = state.userPrefs?.budgetMax != null && state.userPrefs.budgetMax < 999999
+                ? state.userPrefs.budgetMax : FP_BUDGET_MAX;
+            sMin.value = Math.min(lo, FP_BUDGET_MAX);
+            sMax.value = Math.min(hi, FP_BUDGET_MAX);
+            updateFpSlider();
 
+            // Mark matching preset
             presetBtns.forEach(btn => {
                 btn.classList.remove('selected');
-                const btnMin = Number(btn.dataset.min), btnMax = Number(btn.dataset.max);
-                if (state.userPrefs?.budgetMin === btnMin && state.userPrefs?.budgetMax === btnMax) btn.classList.add('selected');
+                if (state.userPrefs?.budgetMin === Number(btn.dataset.min) &&
+                    state.userPrefs?.budgetMax === Number(btn.dataset.max)) btn.classList.add('selected');
+
                 btn.onclick = () => {
                     presetBtns.forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
-                    minInput.value = btnMin === 0 ? '' : btnMin;
-                    maxInput.value = btnMax >= 999999 ? '' : btnMax;
+                    sMin.value = Math.min(Number(btn.dataset.min), FP_BUDGET_MAX);
+                    sMax.value = Math.min(Number(btn.dataset.max), FP_BUDGET_MAX);
+                    updateFpSlider();
                 };
             });
 
-            // Typing in inputs deselects preset chips
-            [minInput, maxInput].forEach(inp => {
-                inp.oninput = () => presetBtns.forEach(b => b.classList.remove('selected'));
-            });
+            // Slider input → deselect presets
+            sMin.oninput = () => {
+                if (Number(sMin.value) > Number(sMax.value)) sMin.value = sMax.value;
+                updateFpSlider();
+                presetBtns.forEach(b => b.classList.remove('selected'));
+            };
+            sMax.oninput = () => {
+                if (Number(sMax.value) < Number(sMin.value)) sMax.value = sMin.value;
+                updateFpSlider();
+                presetBtns.forEach(b => b.classList.remove('selected'));
+            };
         }
 
         let filterPanelOpen = false;
@@ -989,16 +1073,14 @@
 
         document.getElementById('fp-apply-btn').addEventListener('click', () => {
             const cats = [...document.querySelectorAll('#fp-category-chips .fchip.selected')].map(b => b.textContent.trim());
-            const minRaw = document.getElementById('fp-budget-min').value;
-            const maxRaw = document.getElementById('fp-budget-max').value;
-            const budgetMin = minRaw !== '' ? Number(minRaw) : null; // 만원
-            const budgetMax = maxRaw !== '' ? Number(maxRaw) : null; // 만원
-            const budgetLabel = (() => {
-                if (budgetMin == null && budgetMax == null) return null;
-                if (budgetMin == null) return `${budgetMax.toLocaleString('ko-KR')}만원 이하`;
-                if (budgetMax == null) return `${budgetMin.toLocaleString('ko-KR')}만원 이상`;
-                return `${budgetMin.toLocaleString('ko-KR')}~${budgetMax.toLocaleString('ko-KR')}만원`;
-            })();
+            const lo = Number(document.getElementById('fp-slider-min').value);
+            const hi = Number(document.getElementById('fp-slider-max').value);
+            const budgetMin = lo === 0 ? null : lo;
+            const budgetMax = hi >= FP_BUDGET_MAX ? null : hi;
+            const budgetLabel = budgetMin == null && budgetMax == null ? null
+                : budgetMin == null ? `${fpFmtManwon(budgetMax)} 이하`
+                : budgetMax == null ? `${fpFmtManwon(budgetMin)} 이상`
+                : `${fpFmtManwon(budgetMin)}~${fpFmtManwon(budgetMax)}`;
             const prefs = {
                 categories: cats,
                 budgetMin,
@@ -1019,8 +1101,11 @@
             localStorage.removeItem('brandhub_prefs');
             document.querySelectorAll('#fp-category-chips .fchip').forEach(b => b.classList.remove('selected'));
             document.querySelectorAll('#fp-budget-presets .fchip').forEach(b => b.classList.remove('selected'));
-            document.getElementById('fp-budget-min').value = '';
-            document.getElementById('fp-budget-max').value = '';
+            const sMin = document.getElementById('fp-slider-min');
+            const sMax = document.getElementById('fp-slider-max');
+            if (sMin) sMin.value = 0;
+            if (sMax) sMax.value = FP_BUDGET_MAX;
+            updateFpSlider();
             applyFilter();
         });
 

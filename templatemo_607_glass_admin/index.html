@@ -116,6 +116,55 @@
         }
         .wizard-skip:hover { color: var(--text-secondary); text-decoration: underline; }
 
+        /* Scrollable budget presets row */
+        .budget-presets-row {
+            display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px;
+            padding-bottom: 8px; margin-bottom: 14px;
+            scrollbar-width: thin; scrollbar-color: var(--glass-border) transparent;
+        }
+        .budget-presets-row .wchip { flex-shrink: 0; }
+
+        /* Dual range slider */
+        .dual-range-wrap { margin: 4px 0 6px; }
+        .dual-range-slider {
+            position: relative; height: 32px;
+            display: flex; align-items: center; margin-bottom: 4px;
+        }
+        .slider-track {
+            position: absolute; width: 100%; height: 4px;
+            background: var(--glass-border); border-radius: 2px; pointer-events: none;
+        }
+        .slider-fill {
+            position: absolute; height: 4px; background: #6366f1;
+            border-radius: 2px; pointer-events: none; left: 0%; width: 100%;
+        }
+        .slider-thumb {
+            position: absolute; width: 100%; height: 0;
+            -webkit-appearance: none; appearance: none;
+            background: transparent; pointer-events: none;
+            outline: none; margin: 0; padding: 0;
+        }
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #fff; border: 2.5px solid #6366f1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18); cursor: pointer;
+            pointer-events: all; transition: transform 0.12s, box-shadow 0.12s;
+        }
+        .slider-thumb::-webkit-slider-thumb:hover { transform: scale(1.18); box-shadow: 0 3px 12px rgba(99,102,241,0.3); }
+        .slider-thumb::-moz-range-thumb {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #fff; border: 2.5px solid #6366f1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18); cursor: pointer; pointer-events: all;
+        }
+        .slider-labels {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.82rem; margin-top: 6px; gap: 8px;
+        }
+        .slider-val { font-weight: 700; color: #6366f1; }
+        .slider-sep { color: var(--text-muted); flex-shrink: 0; }
+        .slider-none { color: var(--text-muted); font-weight: 400; }
+
         /* Loading */
         .chips-loading { font-size: 0.85rem; color: var(--text-muted); padding: 8px 0; }
 
@@ -185,13 +234,35 @@
 
             <div class="wizard-section">
                 <div class="wizard-section-title">창업 예산</div>
-                <div class="wizard-section-hint">하나 선택 · 선택 안 하면 예산 제한 없음</div>
-                <div class="chip-grid" id="budget-chips">
-                    <button class="wchip budget" data-min="0" data-max="5000">5천만원 미만</button>
-                    <button class="wchip budget" data-min="5000" data-max="10000">5천만 ~ 1억</button>
-                    <button class="wchip budget" data-min="10000" data-max="30000">1억 ~ 3억</button>
-                    <button class="wchip budget" data-min="30000" data-max="50000">3억 ~ 5억</button>
-                    <button class="wchip budget" data-min="50000" data-max="999999">5억 이상</button>
+                <div class="wizard-section-hint">빠른 선택 또는 슬라이더로 직접 설정 (단위: 만원)</div>
+
+                <!-- Scrollable preset chips -->
+                <div class="budget-presets-row" id="budget-chips">
+                    <button class="wchip budget" data-min="0" data-max="5000">5천만 미만</button>
+                    <button class="wchip budget" data-min="5000" data-max="10000">5천만~1억</button>
+                    <button class="wchip budget" data-min="10000" data-max="20000">1억~2억</button>
+                    <button class="wchip budget" data-min="20000" data-max="30000">2억~3억</button>
+                    <button class="wchip budget" data-min="30000" data-max="50000">3억~5억</button>
+                    <button class="wchip budget" data-min="50000" data-max="100000">5억~10억</button>
+                    <button class="wchip budget" data-min="100000" data-max="999999">10억 이상</button>
+                </div>
+
+                <!-- Dual range slider -->
+                <div class="dual-range-wrap">
+                    <div class="dual-range-slider">
+                        <div class="slider-track">
+                            <div class="slider-fill" id="slider-fill"></div>
+                        </div>
+                        <input type="range" class="slider-thumb" id="slider-min"
+                               min="0" max="100000" step="1000" value="0">
+                        <input type="range" class="slider-thumb" id="slider-max"
+                               min="0" max="100000" step="1000" value="100000">
+                    </div>
+                    <div class="slider-labels">
+                        <span id="slider-min-label" class="slider-none">제한 없음</span>
+                        <span class="slider-sep">~</span>
+                        <span id="slider-max-label" class="slider-none">제한 없음</span>
+                    </div>
                 </div>
             </div>
 
@@ -242,21 +313,90 @@
             }
         }
 
+        /* ── Budget Slider ── */
+        const BUDGET_MAX = 100000; // 100,000만원 = 10억
+        const sliderMin = document.getElementById('slider-min');
+        const sliderMax = document.getElementById('slider-max');
+        const sliderFill = document.getElementById('slider-fill');
+        const sliderMinLbl = document.getElementById('slider-min-label');
+        const sliderMaxLbl = document.getElementById('slider-max-label');
+
+        function fmtManwon(v) {
+            if (v <= 0) return '0원';
+            const eok = Math.floor(v / 10000);
+            const man = v % 10000;
+            const parts = [];
+            if (eok > 0) parts.push(`${eok}억`);
+            if (man > 0) parts.push(`${man.toLocaleString('ko-KR')}만`);
+            return parts.join(' ') + '원';
+        }
+
+        function updateSlider() {
+            const lo = Number(sliderMin.value);
+            const hi = Number(sliderMax.value);
+            sliderFill.style.left = (lo / BUDGET_MAX * 100) + '%';
+            sliderFill.style.width = ((hi - lo) / BUDGET_MAX * 100) + '%';
+
+            if (lo === 0) {
+                sliderMinLbl.textContent = '제한 없음';
+                sliderMinLbl.className = 'slider-none';
+            } else {
+                sliderMinLbl.textContent = fmtManwon(lo);
+                sliderMinLbl.className = 'slider-val';
+            }
+            if (hi >= BUDGET_MAX) {
+                sliderMaxLbl.textContent = '제한 없음';
+                sliderMaxLbl.className = 'slider-none';
+            } else {
+                sliderMaxLbl.textContent = fmtManwon(hi);
+                sliderMaxLbl.className = 'slider-val';
+            }
+        }
+
+        sliderMin.addEventListener('input', () => {
+            if (Number(sliderMin.value) > Number(sliderMax.value)) sliderMin.value = sliderMax.value;
+            updateSlider();
+            document.querySelectorAll('#budget-chips .wchip').forEach(b => b.classList.remove('selected'));
+        });
+        sliderMax.addEventListener('input', () => {
+            if (Number(sliderMax.value) < Number(sliderMin.value)) sliderMax.value = sliderMin.value;
+            updateSlider();
+            document.querySelectorAll('#budget-chips .wchip').forEach(b => b.classList.remove('selected'));
+        });
+
+        // Preset chip click → update slider, keep chip highlighted
         document.querySelectorAll('#budget-chips .wchip').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('#budget-chips .wchip').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
+                sliderMin.value = Math.min(Number(btn.dataset.min), BUDGET_MAX);
+                sliderMax.value = Math.min(Number(btn.dataset.max), BUDGET_MAX);
+                updateSlider();
             });
         });
 
+        updateSlider(); // init fill
+
+        function readBudgetPrefs() {
+            const lo = Number(sliderMin.value);
+            const hi = Number(sliderMax.value);
+            const budgetMin = lo === 0 ? null : lo;
+            const budgetMax = hi >= BUDGET_MAX ? null : hi;
+            const label = budgetMin == null && budgetMax == null ? null
+                : budgetMin == null ? `${fmtManwon(budgetMax)} 이하`
+                : budgetMax == null ? `${fmtManwon(budgetMin)} 이상`
+                : `${fmtManwon(budgetMin)}~${fmtManwon(budgetMax)}`;
+            return { budgetMin, budgetMax, label };
+        }
+
         document.getElementById('start-btn').addEventListener('click', () => {
             const cats = [...document.querySelectorAll('#category-chips .wchip.selected')].map(b => b.textContent.trim());
-            const budgetBtn = document.querySelector('#budget-chips .wchip.selected');
+            const { budgetMin, budgetMax, label: budgetLabel } = readBudgetPrefs();
             const prefs = {
                 categories: cats,
-                budgetMin: budgetBtn ? Number(budgetBtn.dataset.min) : null,
-                budgetMax: budgetBtn ? Number(budgetBtn.dataset.max) : null,
-                label: [cats.length ? cats.join(', ') : null, budgetBtn ? budgetBtn.textContent.trim() : null].filter(Boolean).join(' · ')
+                budgetMin,
+                budgetMax,
+                label: [cats.length ? cats.join(', ') : null, budgetLabel].filter(Boolean).join(' · ')
             };
             localStorage.setItem('brandhub_prefs', JSON.stringify(prefs));
             localStorage.setItem('brandhub_onboarded', '1');
