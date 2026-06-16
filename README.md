@@ -8,7 +8,7 @@
 
 | 구분 | URL |
 |------|-----|
-| 프론트엔드 (Netlify) | https://brandhub-swai.netlify.app |
+| 프론트엔드 (Netlify) | https://dapper-sawine-fc3471.netlify.app/|
 | 백엔드 API (Render) | https://swai-8vm2.onrender.com |
 
 ---
