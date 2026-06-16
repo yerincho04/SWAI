@@ -50,35 +50,57 @@
 
 ## 로컬 실행 방법
 
-### 사전 준비
-- Python 3.10 이상
-- OpenAI API 키
-
-### 백엔드 실행
+### 1. 저장소 클론
 
 ```bash
-# 의존성 설치
+git clone https://github.com/yerincho04/SWAI.git
+cd SWAI
+```
+
+### 2. 사전 준비
+- Python 3.10 이상 필요 (`python3 --version` 으로 확인)
+- OpenAI API 키 필요
+
+### 3. 백엔드 실행
+
+```bash
+# 가상환경 생성 및 활성화 (권장)
+python3 -m venv venv
+
+# Mac / Linux
+source venv/bin/activate
+
+# Windows
+venv\Scripts\activate
+
+# 의존성 설치 (프로젝트 루트에서 실행)
 pip install -r db_chatbot/requirements.txt
 
 # 환경 변수 설정
+# Mac / Linux
 export OPENAI_API_KEY=your_openai_api_key_here
 
-# 서버 실행
+# Windows
+set OPENAI_API_KEY=your_openai_api_key_here
+
+# 서버 실행 (프로젝트 루트에서 실행)
 cd db_chatbot && uvicorn web_api:app --host 127.0.0.1 --port 8001
 ```
 
-서버가 실행되면 `http://127.0.0.1:8001/health` 에서 `{"ok": true}` 응답을 확인할 수 있습니다.
+서버가 실행되면 브라우저에서 `http://127.0.0.1:8001/health` 접속 시 `{"ok": true}` 가 표시됩니다.
 
-### 프론트엔드 실행
+### 4. 프론트엔드 실행
 
-VS Code의 **Live Server** 확장을 사용하여 프로젝트 루트에서 실행합니다.
+> **사전 준비**: VS Code에 **Live Server** 확장 설치 필요
 
-```
-프로젝트 루트에서 Live Server 실행
-→ templatemo_607_glass_admin/index.html 열기
-```
+1. VS Code에서 프로젝트 루트 폴더(`SWAI`)를 열기
+2. `templatemo_607_glass_admin/index.html` 파일을 열기
+3. 우하단 **Go Live** 버튼 클릭 (또는 우클릭 → Open with Live Server)
+4. 브라우저에서 자동으로 `http://127.0.0.1:5500/templatemo_607_glass_admin/index.html` 열림
 
-> 로컬 실행 시 채팅 API는 `http://127.0.0.1:8001/api/chat` 으로 자동 연결됩니다.
+> **참고**: 브랜드 데이터 JSON 파일(`templatemo_607_glass_admin/data/`)은 저장소에 포함되어 있으므로 별도 빌드 스크립트 실행 불필요합니다.
+
+> **참고**: 로컬 실행 시 채팅 API는 `http://127.0.0.1:8001/api/chat` 으로 자동 연결됩니다 (`app-config.js` 기본값).
 
 ---
 
