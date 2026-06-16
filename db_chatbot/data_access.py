@@ -460,6 +460,7 @@ class BrandDataStore:
         api_data_root: Path | str = Path("db_chatbot/api_data"),
         db_path: Path | str | None = None,
         selected_source: SelectedTableSource | None = None,
+        load_enrichment: bool = True,
     ) -> None:
         self.build_dir = Path(build_dir)
         self.api_data_root = Path(api_data_root)
@@ -533,7 +534,8 @@ class BrandDataStore:
         self.fntn_extra_by_brand_year: dict[int, dict[int, dict[str, Any]]] = defaultdict(dict)
         self.brand_extra_by_brand_year: dict[int, dict[int, dict[str, Any]]] = defaultdict(dict)
         self.interior_extra_by_brand_year: dict[int, dict[int, dict[str, Any]]] = defaultdict(dict)
-        self._load_api_data_enrichment()
+        if load_enrichment:
+            self._load_api_data_enrichment()
 
     def _resolve_api_brand_id(self, row: dict[str, Any]) -> int | None:
         brand_id = _safe_int(row.get("brand_id"))

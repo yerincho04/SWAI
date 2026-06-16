@@ -29,12 +29,14 @@ def _get_runtime(
     source_mode: str,
     api_data_root: str,
     db_path: str,
+    load_enrichment: bool,
 ):
     store = BrandDataStore(
         build_dir=Path(build_dir),
         source_mode=source_mode,
         api_data_root=Path(api_data_root),
         db_path=Path(db_path) if db_path else None,
+        load_enrichment=load_enrichment,
     )
     overview_tool = create_brand_overview_tool(store)
     compare_tool = create_brand_compare_tool(store)
@@ -93,6 +95,7 @@ def run_once(
     source_mode: str = "excel_selected",
     api_data_root: Path | str = Path("db_chatbot/api_data"),
     db_path: Path | str | None = None,
+    load_enrichment: bool = True,
 ) -> str:
     load_env_file(Path("db_chatbot/.env"))
     if not os.getenv("OPENAI_API_KEY"):
@@ -104,6 +107,7 @@ def run_once(
         source_mode=source_mode,
         api_data_root=str(Path(api_data_root)),
         db_path=str(Path(db_path)) if db_path is not None else "",
+        load_enrichment=load_enrichment,
     )
     tools_by_name = runtime["tools_by_name"]
     fallback_tool = runtime["fallback_tool"]

@@ -62,6 +62,7 @@ def chat(body: ChatRequest):
             source_mode="build",
             build_dir=BUILD_DIR,
             api_data_root=API_DATA_ROOT,
+            load_enrichment=False,
         )
     except Exception as exc:
         elapsed = time.perf_counter() - started_at
