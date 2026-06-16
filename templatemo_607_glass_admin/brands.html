@@ -765,6 +765,13 @@
             const d = new Date(), p = v => String(v).padStart(2,'0');
             return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
         }
+        async function sendSheetInsert(tableName, payload) {
+            if (!SHEET_SCRIPT_URL) throw new Error('Missing sheetScriptUrl');
+            const url = `${SHEET_SCRIPT_URL}?action=insert&table=${encodeURIComponent(tableName)}&data=${encodeURIComponent(payload)}`;
+            const res = await requestJsonp(url);
+            if (!res || !res.success) throw new Error(res?.data?.error || 'Insert failed');
+            return res;
+        }
         async function logVisitorAccess() {
             if (!SHEET_SCRIPT_URL || state.visitorLogSent) return;
             state.visitorLogSent = true;
