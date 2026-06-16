@@ -791,7 +791,8 @@
             if (!SHEET_SCRIPT_URL) throw new Error('Missing sheetScriptUrl');
             const url = `${SHEET_SCRIPT_URL}?action=insert&table=${encodeURIComponent(tableName)}&data=${encodeURIComponent(payload)}`;
             const res = await requestJsonp(url);
-            if (!res || !res.success) throw new Error(res?.data?.error || 'Insert failed');
+            const errorMessage = res && res.data && res.data.error ? res.data.error : 'Insert failed';
+            if (!res || !res.success) throw new Error(errorMessage);
             return res;
         }
         async function logVisitorAccess() {
@@ -876,7 +877,7 @@
                     }
                 }
                 return { brandId: b.brand_id, brandName: b.brand_name, companyName: b.company_name, categoryMain: b.category_main, categorySub: b.category_sub, franchiseStartDate: b.franchise_start_date, latestStats: ls, startupCost, startupBreakdown, storeType, trends };
-            }).sort((a,b) => (b.latestStats?.store_count||0) - (a.latestStats?.store_count||0));
+            }).sort((a,b) => ((b.latestStats && b.latestStats.store_count) || 0) - ((a.latestStats && a.latestStats.store_count) || 0));
         }
 
         /* ── Filter ── */
@@ -922,7 +923,7 @@
                 return `${budgetMin.toLocaleString('ko-KR')}~${budgetMax.toLocaleString('ko-KR')}만원`;
             })();
             const parts = [
-                state.userPrefs.categories?.length ? state.userPrefs.categories.join(', ') : null,
+                state.userPrefs.categories && state.userPrefs.categories.length ? state.userPrefs.categories.join(', ') : null,
                 budgetLabel
             ].filter(Boolean);
             el.innerHTML = parts.map(p => `<span class="filter-active-chip">${p}</span>`).join('');
@@ -945,8 +946,10 @@
             displayList.slice(0, 150).forEach(brand => {
                 const saved = state.savedBrands.has(brand.brandId);
                 const active = state.selectedBrand && state.selectedBrand.brandId === brand.brandId;
-                const card = document.createElement('button');
+                const card = document.createElement('div');
                 card.className = `brand-card${active ? ' active' : ''}`;
+                card.setAttribute('role', 'button');
+                card.setAttribute('tabindex', '0');
                 card.innerHTML = `
                     <div class="brand-card-top">
                         <div>
@@ -959,11 +962,11 @@
                         <span class="brand-cat-pill">${brand.categorySub || brand.categoryMain || '-'}</span>
                         <div class="brand-card-stats">
                             <div class="brand-card-stat">
-                                <div class="brand-card-stat-val">${fmt.num(brand.latestStats?.store_count)}</div>
+                                <div class="brand-card-stat-val">${fmt.num(brand.latestStats ? brand.latestStats.store_count : null)}</div>
                                 <div class="brand-card-stat-label">점포</div>
                             </div>
                             <div class="brand-card-stat">
-                                <div class="brand-card-stat-val">${brand.latestStats?.year || '-'}</div>
+                                <div class="brand-card-stat-val">${brand.latestStats ? brand.latestStats.year : '-'}</div>
                                 <div class="brand-card-stat-label">연도</div>
                             </div>
                         </div>
@@ -971,6 +974,13 @@
                 `;
                 card.addEventListener('click', e => {
                     if (e.target.closest('.brand-card-save')) return;
+                    state.selectedBrand = brand;
+                    renderBrandList();
+                    renderBrandDetail();
+                });
+                card.addEventListener('keydown', e => {
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    e.preventDefault();
                     state.selectedBrand = brand;
                     renderBrandList();
                     renderBrandDetail();
@@ -1090,13 +1100,13 @@
             const [a, b] = bs;
             const rows = [
                 ['업종', [a.categoryMain,a.categorySub].filter(Boolean).join('/'), [b.categoryMain,b.categorySub].filter(Boolean).join('/')],
-                ['점포 수', fmt.num(a.latestStats?.store_count), fmt.num(b.latestStats?.store_count)],
-                ['평균 매출', fmt.krw(a.latestStats?.avg_sales_krw), fmt.krw(b.latestStats?.avg_sales_krw)],
-                ['성장률', fmt.pct(a.latestStats?.store_growth_rate), fmt.pct(b.latestStats?.store_growth_rate)],
-                ['폐점률', fmt.pct(a.latestStats?.closure_rate), fmt.pct(b.latestStats?.closure_rate)],
-                ['이탈률', fmt.pct(a.latestStats?.churn_rate), fmt.pct(b.latestStats?.churn_rate)],
+                ['점포 수', fmt.num(a.latestStats ? a.latestStats.store_count : null), fmt.num(b.latestStats ? b.latestStats.store_count : null)],
+                ['평균 매출', fmt.krw(a.latestStats ? a.latestStats.avg_sales_krw : null), fmt.krw(b.latestStats ? b.latestStats.avg_sales_krw : null)],
+                ['성장률', fmt.pct(a.latestStats ? a.latestStats.store_growth_rate : null), fmt.pct(b.latestStats ? b.latestStats.store_growth_rate : null)],
+                ['폐점률', fmt.pct(a.latestStats ? a.latestStats.closure_rate : null), fmt.pct(b.latestStats ? b.latestStats.closure_rate : null)],
+                ['이탈률', fmt.pct(a.latestStats ? a.latestStats.churn_rate : null), fmt.pct(b.latestStats ? b.latestStats.churn_rate : null)],
                 ['창업 총비용', fmt.krw(a.startupCost), fmt.krw(b.startupCost)],
-                ['기준 연도', String(a.latestStats?.year||'-'), String(b.latestStats?.year||'-')]
+                ['기준 연도', String(a.latestStats ? a.latestStats.year : '-'), String(b.latestStats ? b.latestStats.year : '-')]
             ];
             document.getElementById('compare-content').innerHTML = `
                 <table class="compare-table">
@@ -1148,7 +1158,7 @@
                 const btn = document.createElement('button');
                 btn.className = 'fchip';
                 btn.textContent = cat;
-                if (state.userPrefs?.categories?.includes(cat)) btn.classList.add('selected');
+                if (state.userPrefs && state.userPrefs.categories && state.userPrefs.categories.includes(cat)) btn.classList.add('selected');
                 btn.addEventListener('click', () => btn.classList.toggle('selected'));
                 container.appendChild(btn);
             });
@@ -1159,8 +1169,8 @@
             const presetBtns = document.querySelectorAll('#fp-budget-presets .fchip');
 
             // Restore slider from current prefs
-            const lo = state.userPrefs?.budgetMin ?? 0;
-            const hi = state.userPrefs?.budgetMax != null && state.userPrefs.budgetMax < 999999
+            const lo = state.userPrefs && state.userPrefs.budgetMin != null ? state.userPrefs.budgetMin : 0;
+            const hi = state.userPrefs && state.userPrefs.budgetMax != null && state.userPrefs.budgetMax < 999999
                 ? state.userPrefs.budgetMax : FP_BUDGET_MAX;
             sMin.value = Math.min(lo, FP_BUDGET_MAX);
             sMax.value = Math.min(hi, FP_BUDGET_MAX);
@@ -1169,8 +1179,9 @@
             // Mark matching preset
             presetBtns.forEach(btn => {
                 btn.classList.remove('selected');
-                if (state.userPrefs?.budgetMin === Number(btn.dataset.min) &&
-                    state.userPrefs?.budgetMax === Number(btn.dataset.max)) btn.classList.add('selected');
+                if (state.userPrefs &&
+                    state.userPrefs.budgetMin === Number(btn.dataset.min) &&
+                    state.userPrefs.budgetMax === Number(btn.dataset.max)) btn.classList.add('selected');
 
                 btn.onclick = () => {
                     presetBtns.forEach(b => b.classList.remove('selected'));
