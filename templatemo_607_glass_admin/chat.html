@@ -112,9 +112,11 @@
         .chat-card-header {
             padding: 16px 20px; border-bottom: 1px solid var(--glass-border);
             display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+            gap: 14px;
         }
         .chat-card-header h2 { font-size: 0.95rem; font-weight: 700; margin: 0 0 2px; }
         .chat-card-header p { font-size: 0.78rem; color: var(--text-muted); margin: 0; }
+        .chat-header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .chatbot-status {
             padding: 4px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;
             background: var(--glass-border); color: var(--text-secondary); white-space: nowrap;
@@ -122,6 +124,14 @@
         .chatbot-status.ready { background: rgba(16,185,129,0.12); color: var(--emerald); }
         .chatbot-status.thinking { background: rgba(99,102,241,0.12); color: #6366f1; }
         .chatbot-status.error { background: rgba(239,68,68,0.12); color: #ef4444; }
+        .report-launch-btn {
+            padding: 7px 13px; border-radius: 10px; border: none;
+            background: linear-gradient(135deg, #6366f1, #10b981);
+            color: #fff; font-size: 0.78rem; font-weight: 700; font-family: inherit;
+            cursor: pointer; white-space: nowrap; transition: opacity 0.18s, transform 0.18s;
+        }
+        .report-launch-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .report-launch-btn:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
 
         .chatbot-messages {
             flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;
@@ -175,9 +185,64 @@
             30% { transform: translateY(-7px); opacity: 1; }
         }
 
+        /* ── Report Request Modal ── */
+        .report-overlay {
+            position: fixed; inset: 0; z-index: 400;
+            background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .report-overlay.hidden { display: none; }
+        .report-card {
+            width: 100%; max-width: 440px; background: var(--glass-bg);
+            border: 1px solid var(--glass-border); border-radius: 14px;
+            padding: 22px; box-shadow: var(--shadow-lg);
+        }
+        .report-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+        .report-card-header h2 { font-size: 1.05rem; font-weight: 700; margin: 0 0 5px; }
+        .report-card-header p { font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.45; }
+        .report-close {
+            background: none; border: none; cursor: pointer; color: var(--text-muted);
+            font-size: 1.2rem; line-height: 1; flex-shrink: 0;
+        }
+        .report-close:hover { color: #ef4444; }
+        .report-features { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+        .report-feature {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+            border-radius: 8px; padding: 9px 10px; font-size: 0.78rem; color: var(--text-secondary);
+        }
+        .report-form-group { margin-bottom: 13px; }
+        .report-form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .report-input, .report-textarea {
+            width: 100%; padding: 10px 12px; border-radius: 10px;
+            border: 1.5px solid var(--glass-border); background: var(--glass-bg);
+            color: var(--text-primary); font-size: 0.88rem; font-family: inherit;
+            outline: none; box-sizing: border-box;
+        }
+        .report-input:focus, .report-textarea:focus { border-color: #6366f1; }
+        .report-input[readonly] { color: var(--text-secondary); cursor: default; }
+        .report-textarea { resize: none; line-height: 1.5; }
+        .report-submit-btn {
+            width: 100%; padding: 11px; border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #6366f1, #10b981); color: #fff;
+            font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit;
+        }
+        .report-submit-btn:hover { opacity: 0.9; }
+        .report-submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .report-form-status { font-size: 0.8rem; color: var(--text-muted); margin: 8px 0 0; text-align: center; min-height: 18px; }
+        .report-success { text-align: center; padding: 12px 0; }
+        .report-success.hidden { display: none; }
+        .report-success-icon { font-size: 2.2rem; margin-bottom: 10px; }
+        .report-success h3 { font-size: 1.05rem; font-weight: 700; margin: 0 0 9px; }
+        .report-success p { font-size: 0.88rem; color: var(--text-secondary); margin: 0 0 6px; line-height: 1.55; }
+        .report-success-note { font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; }
+
         @media (max-width: 768px) {
             .step-trail { display: none; }
             .chat-body { padding: 14px 16px; }
+            .chat-card-header { align-items: flex-start; flex-direction: column; }
+            .chat-header-actions { width: 100%; justify-content: space-between; }
+            .report-launch-btn { flex: 1; }
+            .report-features { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -265,7 +330,10 @@
                         <h2>AI 브랜드 분석</h2>
                         <p id="chat-subtitle">위에서 브랜드를 선택하면 해당 데이터를 기반으로 답변합니다.</p>
                     </div>
-                    <span class="chatbot-status" id="chat-status">준비 중</span>
+                    <div class="chat-header-actions">
+                        <button class="report-launch-btn" id="report-open" type="button" disabled>AI 리포트 생성하기</button>
+                        <span class="chatbot-status" id="chat-status">준비 중</span>
+                    </div>
                 </div>
 
                 <div class="chatbot-messages" id="chat-messages">
@@ -291,6 +359,52 @@
         </div>
     </div>
 
+    <!-- Report Request Modal -->
+    <div class="report-overlay hidden" id="report-modal">
+        <div class="report-card">
+            <div class="report-card-header">
+                <div>
+                    <h2>AI 브랜드 분석 리포트</h2>
+                    <p id="report-subtitle">선택한 브랜드의 리포트를 신청합니다.</p>
+                </div>
+                <button class="report-close" id="report-close" type="button">✕</button>
+            </div>
+
+            <div class="report-features">
+                <div class="report-feature">매출·점포 수 추이 분석</div>
+                <div class="report-feature">창업 비용 상세 분해</div>
+                <div class="report-feature">폐점률·이탈률 리스크</div>
+                <div class="report-feature">AI 창업 적합도 진단</div>
+            </div>
+
+            <div id="report-form-wrap">
+                <form id="report-form">
+                    <div class="report-form-group">
+                        <label for="report-email">이메일 *</label>
+                        <input type="email" id="report-email" class="report-input" placeholder="리포트를 받을 이메일" required>
+                    </div>
+                    <div class="report-form-group">
+                        <label for="report-brand">관심 브랜드</label>
+                        <input type="text" id="report-brand" class="report-input" readonly>
+                    </div>
+                    <div class="report-form-group">
+                        <label for="report-comment">추가 요청사항 (선택)</label>
+                        <textarea id="report-comment" class="report-textarea" rows="2" maxlength="500" placeholder="예: 방금 상담한 내용도 함께 반영해 주세요"></textarea>
+                    </div>
+                    <button type="submit" class="report-submit-btn" id="report-submit">리포트 신청하기</button>
+                    <p class="report-form-status" id="report-status"></p>
+                </form>
+            </div>
+
+            <div class="report-success hidden" id="report-success">
+                <div class="report-success-icon">✓</div>
+                <h3>신청 완료!</h3>
+                <p><strong id="report-success-email"></strong>으로 리포트를 보내드리겠습니다.</p>
+                <p class="report-success-note">현재 베타 운영 중으로 순서대로 안내드립니다.</p>
+            </div>
+        </div>
+    </div>
+
     <script src="app-config.js"></script>
     <script src="templatemo-glass-admin-script.js"></script>
     <script>
@@ -304,6 +418,8 @@
         const CHAT_API_URL = (window.APP_CONFIG && window.APP_CONFIG.chatApiUrl)
             ? window.APP_CONFIG.chatApiUrl
             : 'http://127.0.0.1:8001/api/chat';
+        const SHEET_SCRIPT_URL = (window.APP_CONFIG && window.APP_CONFIG.sheetScriptUrl) || '';
+        const SURVEY_TABLE = (window.APP_CONFIG && window.APP_CONFIG.surveyTable) || 'tab_final';
 
         const state = { brands: [], selectedBrand: null };
 
@@ -317,8 +433,80 @@
             status: document.getElementById('chat-status'),
             form: document.getElementById('chat-form'),
             input: document.getElementById('chat-input'),
-            send: document.getElementById('chat-send')
+            send: document.getElementById('chat-send'),
+            reportOpen: document.getElementById('report-open'),
+            reportModal: document.getElementById('report-modal'),
+            reportClose: document.getElementById('report-close'),
+            reportForm: document.getElementById('report-form'),
+            reportFormWrap: document.getElementById('report-form-wrap'),
+            reportSubtitle: document.getElementById('report-subtitle'),
+            reportEmail: document.getElementById('report-email'),
+            reportBrand: document.getElementById('report-brand'),
+            reportComment: document.getElementById('report-comment'),
+            reportSubmit: document.getElementById('report-submit'),
+            reportStatus: document.getElementById('report-status'),
+            reportSuccess: document.getElementById('report-success'),
+            reportSuccessEmail: document.getElementById('report-success-email')
         };
+
+        function getVisitorId() {
+            const key = 'brandhub_visitor_id';
+            let id = localStorage.getItem(key);
+            if (!id) {
+                id = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+                localStorage.setItem(key, id);
+            }
+            return id;
+        }
+
+        function requestJsonp(url) {
+            return new Promise((resolve, reject) => {
+                const cb = 'jsonp_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                const s = document.createElement('script');
+                let settled = false;
+                let timer = null;
+                const cleanup = () => {
+                    if (timer) clearTimeout(timer);
+                    delete window[cb];
+                    if (s.parentNode) s.parentNode.removeChild(s);
+                };
+                window[cb] = data => {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    resolve(data);
+                };
+                s.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + cb;
+                s.onerror = () => {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    reject(new Error('JSONP failed'));
+                };
+                timer = setTimeout(() => {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    reject(new Error('Google Sheet request timed out'));
+                }, 15000);
+                document.body.appendChild(s);
+            });
+        }
+
+        function stamp() {
+            const d = new Date();
+            const p = v => String(v).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        }
+
+        async function sendSheetInsert(tableName, payload) {
+            if (!SHEET_SCRIPT_URL) throw new Error('Missing sheetScriptUrl');
+            const url = `${SHEET_SCRIPT_URL}?action=insert&table=${encodeURIComponent(tableName)}&data=${encodeURIComponent(payload)}`;
+            const res = await requestJsonp(url);
+            const errorMessage = res && res.data && res.data.error ? res.data.error : 'Insert failed';
+            if (!res || !res.success) throw new Error(errorMessage);
+            return res;
+        }
 
         async function fetchJson(urls) {
             for (const url of urls) {
@@ -367,12 +555,14 @@
             if (brand) {
                 els.selectedPill.innerHTML = `<span class="selected-pill">♥ ${brand.brand_name}</span>`;
                 els.subtitle.textContent = `${brand.brand_name} 관련 질문을 하면 AI가 해당 데이터를 기반으로 답변합니다.`;
+                els.reportOpen.disabled = false;
                 setStatus('준비됨', 'ready');
                 clearMessages();
                 addMsg('bot', `${brand.brand_name}에 대해 궁금한 점을 물어보세요. 예: 점포 수 추이, 창업 비용, 운영 안정성`);
             } else {
                 els.selectedPill.innerHTML = '';
                 els.subtitle.textContent = '위에서 브랜드를 선택하면 해당 데이터를 기반으로 답변합니다.';
+                els.reportOpen.disabled = true;
                 setStatus('준비 중', '');
             }
         }
@@ -425,9 +615,67 @@
             }
         }
 
+        function openReportModal() {
+            if (!state.selectedBrand) {
+                addMsg('bot', 'AI 리포트를 생성하려면 먼저 브랜드를 선택해 주세요.');
+                return;
+            }
+            els.reportSubtitle.textContent = `${state.selectedBrand.brand_name} 브랜드에 대한 AI 분석 리포트를 신청합니다.`;
+            els.reportBrand.value = state.selectedBrand.brand_name;
+            els.reportEmail.value = '';
+            els.reportComment.value = '';
+            els.reportStatus.textContent = '';
+            els.reportSubmit.disabled = false;
+            els.reportFormWrap.style.display = 'block';
+            els.reportSuccess.classList.add('hidden');
+            els.reportModal.classList.remove('hidden');
+            setTimeout(() => els.reportEmail.focus(), 0);
+        }
+
+        function closeReportModal() {
+            els.reportModal.classList.add('hidden');
+        }
+
         /* ── Event Listeners ── */
         els.brandFilter.addEventListener('input', e => populateSelect(e.target.value));
         els.brandSelect.addEventListener('change', e => selectBrand(e.target.value));
+        els.reportOpen.addEventListener('click', openReportModal);
+        els.reportClose.addEventListener('click', closeReportModal);
+        els.reportModal.addEventListener('click', e => {
+            if (e.target === els.reportModal) closeReportModal();
+        });
+        els.reportForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const email = els.reportEmail.value.trim();
+            const brand = els.reportBrand.value.trim();
+            const comment = els.reportComment.value.trim();
+
+            els.reportSubmit.disabled = true;
+            els.reportStatus.textContent = '신청 중...';
+
+            const payload = JSON.stringify({
+                id: getVisitorId(),
+                email,
+                interested_brand: brand,
+                interested_brand_id: state.selectedBrand ? state.selectedBrand.brand_id : '',
+                wanted_feature: 'AI 분석 리포트',
+                comment: comment || '-',
+                submitted_at: stamp(),
+                landingUrl: window.location.href,
+                source: 'chat_report_modal'
+            });
+
+            try {
+                await sendSheetInsert(SURVEY_TABLE, payload);
+                els.reportFormWrap.style.display = 'none';
+                els.reportSuccessEmail.textContent = email;
+                els.reportSuccess.classList.remove('hidden');
+            } catch (err) {
+                console.error('Report request log failed:', err);
+                els.reportStatus.textContent = `신청 저장에 실패했습니다. 잠시 후 다시 시도해 주세요. (${err.message})`;
+                els.reportSubmit.disabled = false;
+            }
+        });
         els.form.addEventListener('submit', async e => {
             e.preventDefault();
             const q = els.input.value.trim();
