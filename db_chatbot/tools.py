@@ -41,7 +41,9 @@ class FilterCondition(BaseModel):
         )
     )
     op: str = Field(description="Operator: <, <=, >, >=, ==, !=")
-    value: float = Field(description="Numeric threshold value.")
+    value: float = Field(
+        description="Numeric threshold value. Raw money fields ending in _krw are stored as thousand KRW.",
+    )
 
 
 class BrandFilterSearchInput(BaseModel):
@@ -102,7 +104,8 @@ def create_brand_overview_tool(store: BrandDataStore):
         description=(
             "Use this to answer single-brand overview questions about store count, "
             "growth/churn, average sales, store types, startup cost, organization, "
-            "franchise operations, and interior/funding context."
+            "franchise operations, and interior/funding context. Money raw values are thousand KRW; "
+            "prefer formatted/display fields in final answers."
         ),
         args_schema=BrandOverviewInput,
     )
@@ -130,7 +133,8 @@ def create_brand_compare_tool(store: BrandDataStore):
         name="brand_compare",
         description=(
             "Use this to compare two brands side-by-side for store counts, growth/churn, "
-            "average sales, startup cost, operations/funding, and organization metrics."
+            "average sales, startup cost, operations/funding, and organization metrics. "
+            "Money raw values are thousand KRW; prefer formatted/display fields in final answers."
         ),
         args_schema=BrandCompareInput,
     )
@@ -168,7 +172,8 @@ def create_brand_filter_search_tool(store: BrandDataStore):
         name="brand_filter_search",
         description=(
             "Use this to find brands that satisfy numeric conditions like churn rate, "
-            "store count, average sales, startup cost, contract churn, and staffing/funding."
+            "store count, average sales, startup cost, contract churn, and staffing/funding. "
+            "Money raw values are thousand KRW."
         ),
         args_schema=BrandFilterSearchInput,
     )
@@ -197,7 +202,8 @@ def create_brand_trend_tool(store: BrandDataStore):
         description=(
             "Use this to answer single-brand trend questions over years, including "
             "store counts, growth/churn/closure rates, average sales, contract stats, "
-            "funding, staffing, and interior-cost indicators."
+            "funding, staffing, and interior-cost indicators. Money raw values are thousand KRW; "
+            "prefer formatted values in final answers."
         ),
         args_schema=BrandTrendInput,
     )

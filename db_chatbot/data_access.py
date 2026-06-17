@@ -33,15 +33,46 @@ def _format_int(value: int | None) -> str:
 
 
 def _format_krw(value: int | None) -> str:
+    """Format FTC money values.
+
+    Public franchise disclosure amount fields are stored in thousand KRW.
+    For example, raw 23,300 means 23,300,000 KRW, not 23,300 KRW.
+    """
     if value is None:
         return "not disclosed in source data"
-    return f"{value:,} KRW"
+    sign = "-" if value < 0 else ""
+    abs_value = abs(value)
+    manwon = round(abs_value / 10)
+    if manwon == 0:
+        return f"{sign}{abs_value * 1000:,}원"
+
+    eok = manwon // 10000
+    rest = manwon % 10000
+    parts = []
+    if eok:
+        parts.append(f"{eok:,}억")
+    if rest:
+        parts.append(f"{rest:,}만원")
+    return sign + " ".join(parts)
 
 
 def _format_pct(decimal_ratio: float | None) -> str:
     if decimal_ratio is None:
         return "N/A"
     return f"{decimal_ratio * 100:.2f}%"
+
+
+def _with_money_display(cost_summary: dict[str, Any]) -> dict[str, Any]:
+    out = dict(cost_summary)
+    breakdown = out.get("cost_breakdown_krw") or {}
+    out["money_unit"] = "thousand_krw"
+    out["money_unit_note"] = "금액 raw 숫자는 천원 단위이며, 답변에는 display 값을 사용하세요."
+    out["total_initial_cost_display"] = _format_krw(out.get("total_initial_cost_krw"))
+    out["cost_breakdown_display"] = {
+        key: _format_krw(value)
+        for key, value in breakdown.items()
+    }
+    return out
 
 
 def _load_json(path: Path) -> list[dict[str, Any]]:
@@ -1165,13 +1196,13 @@ class BrandDataStore:
     ) -> dict[str, Any]:
         candidate_keys = [k for k in self.costs_by_brand_year_type if k[0] == brand_id]
         if not candidate_keys:
-            return {
+            return _with_money_display({
                 "year_used": None,
                 "store_type_used": None,
                 "cost_basis": "no_cost_data",
                 "total_initial_cost_krw": None,
                 "cost_breakdown_krw": {},
-            }
+            })
 
         years = sorted({k[1] for k in candidate_keys})
         year_candidates = [y for y in years if y <= preferred_year] or years
@@ -1195,14 +1226,14 @@ class BrandDataStore:
                     selected_type = st
                     break
             if selected_type is None:
-                return {
+                return _with_money_display({
                     "year_used": year_used,
                     "store_type_used": None,
                     "available_store_types": types,
                     "cost_basis": "requested_store_type_not_found",
                     "total_initial_cost_krw": None,
                     "cost_breakdown_krw": {},
-                }
+                })
         else:
             for st in types:
                 if st.lower() == "standard":
@@ -1221,24 +1252,24 @@ class BrandDataStore:
                         best_type = st
                         best_basis = basis
                 if best_type is None:
-                    return {
+                    return _with_money_display({
                         "year_used": year_used,
                         "store_type_used": None,
                         "cost_basis": "no_usable_cost_data",
                         "total_initial_cost_krw": None,
                         "cost_breakdown_krw": {},
-                    }
+                    })
                 selected_type = best_type
 
         total, categories, basis = totals_for_type(selected_type)
-        return {
+        return _with_money_display({
             "year_used": year_used,
             "store_type_used": selected_type,
             "available_store_types": types,
             "cost_basis": basis,
             "total_initial_cost_krw": total,
             "cost_breakdown_krw": categories,
-        }
+        })
 
     def get_brand_overview(
         self, brand_name: str, year: int | None = None, store_type: str | None = None
@@ -1414,7 +1445,10 @@ class BrandDataStore:
                     "year_used": cost["year_used"],
                     "store_type_used": cost["store_type_used"],
                     "cost_basis": cost["cost_basis"],
+                    "money_unit": cost.get("money_unit"),
+                    "money_unit_note": cost.get("money_unit_note"),
                     "total_initial_cost_krw": cost["total_initial_cost_krw"],
+                    "total_initial_cost_display": cost.get("total_initial_cost_display"),
                 },
                 "formatted": {
                     "store_count": _format_int(row["store_count"]),
